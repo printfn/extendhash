@@ -1,3 +1,5 @@
+#![doc(html_root_url = "https://docs.rs/extendhash/0.1.0")]
+
 #[derive(Clone)]
 pub struct MD5 {
 	a0: u32,
