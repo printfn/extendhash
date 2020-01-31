@@ -9,7 +9,7 @@ only MD5 is supported, but more hash algorithms are planned in the future.
 ## Usage
 
 ```rust
-# use extendhash::MD5;
+use extendhash::MD5;
 
 let secret_data = "This is a secret!";
 let hash = MD5::compute_hash(secret_data.as_bytes());
