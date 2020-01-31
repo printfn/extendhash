@@ -150,23 +150,23 @@ impl MD5 {
 	///
 	/// ```
 	/// # use extendhash::MD5;
-	/// let secret_data = "This is a secret! ";
-	/// let hash = MD5::compute_hash(secret_data.as_bytes());
+	/// let secret_data = "This is a secret! ".as_bytes();
+	/// let hash = MD5::compute_hash(secret_data);
 	/// let secret_data_length = secret_data.len();
 	/// 
 	/// // Now we try computing a hash extension, assuming that `secret_data`
 	/// // is not available. We only need `hash` and `secret_data_length`.
 	///
-	/// let appended_message = "Appended message.";
-	/// let combined_hash = MD5::extend_hash(hash, secret_data_length, appended_message.as_bytes());
+	/// let appended_message = "Appended message.".as_bytes();
+	/// let combined_hash = MD5::extend_hash(hash, secret_data_length, appended_message);
 	/// 
 	/// // Now we verify that `combined_hash` matches the concatenation (note the intermediate
 	/// // padding):
 	///
 	/// let mut combined_data = Vec::<u8>::new();
-	/// combined_data.extend_from_slice(secret_data.as_bytes());
+	/// combined_data.extend_from_slice(secret_data);
 	/// combined_data.extend_from_slice(MD5::padding_for_length(secret_data_length).as_slice());
-	/// combined_data.extend_from_slice(appended_message.as_bytes());
+	/// combined_data.extend_from_slice(appended_message);
 	/// assert_eq!(combined_hash, MD5::compute_hash(combined_data.as_slice()));
 	/// ```
 	pub fn extend_hash(hash: [u8; 16], length: usize, additional_input: &[u8]) -> [u8; 16] {
