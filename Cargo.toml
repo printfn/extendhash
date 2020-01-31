@@ -3,6 +3,11 @@ name = "extendhash"
 version = "0.1.0"
 authors = ["printfn <printfn@users.noreply.github.com>"]
 edition = "2018"
+description = "Rust Hash Extender"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/printfn/extendhash"
+readme = "README.md"
+keywords = ["hash", "md5"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
