@@ -1,4 +1,4 @@
-#![doc(html_root_url = "https://docs.rs/extendhash/0.1.0")]
+#![doc(html_root_url = "https://docs.rs/extendhash/0.1.1")]
 
 #[derive(Clone)]
 pub struct MD5 {
@@ -165,7 +165,8 @@ impl MD5 {
 	///
 	/// let mut combined_data = Vec::<u8>::new();
 	/// combined_data.extend_from_slice(secret_data);
-	/// combined_data.extend_from_slice(MD5::padding_for_length(secret_data_length).as_slice());
+	/// let intermediate_padding = MD5::padding_for_length(secret_data_length);
+	/// combined_data.extend_from_slice(intermediate_padding.as_slice());
 	/// combined_data.extend_from_slice(appended_message);
 	/// assert_eq!(combined_hash, MD5::compute_hash(combined_data.as_slice()));
 	/// ```
@@ -230,5 +231,25 @@ mod tests {
 			"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".as_bytes()), [
 			0xd1, 0x74, 0xab, 0x98, 0xd2, 0x77, 0xd9, 0xf5,
 			0xa5, 0x61, 0x1c, 0x2c, 0x9f, 0x41, 0x9d, 0x9f]);
+	}
+
+	#[test]
+	fn padding_length_tests() {
+		assert_eq!(MD5::padding_length_for_input_length(0), 64);
+		assert_eq!(MD5::padding_length_for_input_length(1), 63);
+		assert_eq!(MD5::padding_length_for_input_length(2), 62);
+		assert_eq!(MD5::padding_length_for_input_length(3), 61);
+		assert_eq!(MD5::padding_length_for_input_length(4), 60);
+
+		assert_eq!(MD5::padding_length_for_input_length(50), 14);
+		assert_eq!(MD5::padding_length_for_input_length(54), 10);
+		assert_eq!(MD5::padding_length_for_input_length(55), 9);
+		assert_eq!(MD5::padding_length_for_input_length(56), 64 + 8);
+		assert_eq!(MD5::padding_length_for_input_length(57), 64 + 7);
+		assert_eq!(MD5::padding_length_for_input_length(62), 64 + 2);
+		assert_eq!(MD5::padding_length_for_input_length(63), 64 + 1);
+		assert_eq!(MD5::padding_length_for_input_length(64), 64);
+		assert_eq!(MD5::padding_length_for_input_length(128), 64);
+		assert_eq!(MD5::padding_length_for_input_length(64 * 100000), 64);
 	}
 }
