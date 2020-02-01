@@ -22,9 +22,8 @@ let appended_message = "Appended message.".as_bytes();
 let combined_hash = MD5::extend_hash(
 	hash, secret_data_length, appended_message);
 
-// Now we verify that `combined_hash` matches
-// the concatenation (note the intermediate
-// padding):
+// Now we verify that `combined_hash` matches the
+// concatenation (note the intermediate padding):
 let mut combined_data = Vec::<u8>::new();
 combined_data.extend_from_slice(secret_data);
 let intermediate_padding = MD5::padding_for_length(secret_data_length);
