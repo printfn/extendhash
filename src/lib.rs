@@ -156,13 +156,11 @@ impl MD5 {
 	/// 
 	/// // Now we try computing a hash extension, assuming that `secret_data`
 	/// // is not available. We only need `hash` and `secret_data_length`.
-	///
 	/// let appended_message = "Appended message.".as_bytes();
 	/// let combined_hash = MD5::extend_hash(hash, secret_data_length, appended_message);
 	/// 
-	/// // Now we verify that `combined_hash` matches the concatenation (note the intermediate
-	/// // padding):
-	///
+	/// // Now we verify that `combined_hash` matches the
+	/// // concatenation (note the intermediate padding):
 	/// let mut combined_data = Vec::<u8>::new();
 	/// combined_data.extend_from_slice(secret_data);
 	/// let intermediate_padding = MD5::padding_for_length(secret_data_length);
@@ -251,5 +249,23 @@ mod tests {
 		assert_eq!(MD5::padding_length_for_input_length(64), 64);
 		assert_eq!(MD5::padding_length_for_input_length(128), 64);
 		assert_eq!(MD5::padding_length_for_input_length(64 * 100000), 64);
+	}
+
+	#[test]
+	fn test_hash_ext_unknown_length() {
+		let secret = "count=10&lat=37.351&user_id=1&long=-119.827&waffle=eggo".as_bytes();
+		let hash = MD5::compute_hash(secret);
+
+		let appended_str = "&waffle=liege".as_bytes();
+		let target_hash = [
+			242, 240, 105, 100, 235, 191, 195, 219,
+			165, 225, 251, 254, 53, 8, 33, 73];
+		for length in 0..100 {
+			let combined_hash = MD5::extend_hash(hash, length, appended_str);
+			if combined_hash == target_hash {
+				return;
+			}
+		}
+		assert!(false, "No matching hash found");
 	}
 }
