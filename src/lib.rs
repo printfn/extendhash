@@ -232,6 +232,19 @@ mod tests {
 	}
 
 	#[test]
+	fn long_test() {
+		let mut input = String::new();
+		for _ in 0..10000 {
+			input.push_str("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+			input.push_str("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+		}
+		assert_eq!(input.len(), 1_000_000);
+		assert_eq!(MD5::compute_hash(input.as_bytes()), [
+			0x77, 0x07, 0xd6, 0xae, 0x4e, 0x02, 0x7c, 0x70,
+			0xee, 0xa2, 0xa9, 0x35, 0xc2, 0x29, 0x6f, 0x21]);
+	}
+
+	#[test]
 	fn padding_length_tests() {
 		assert_eq!(MD5::padding_length_for_input_length(0), 64);
 		assert_eq!(MD5::padding_length_for_input_length(1), 63);
