@@ -205,13 +205,13 @@ pub fn compute_hash(input: &[u8]) -> [u8; 16] {
 ///
 /// This function returns the MD5 hash of the concatenation of the original
 /// unknown data, its padding, and the `additional_input`.
-/// You can see the included (intermediate) padding by calling `MD5::padding_for_length`.
+/// You can see the included (intermediate) padding by calling `md5::padding_for_length`.
 ///
 /// # Example
 ///
 /// ```
 /// # use extendhash::md5;
-/// let secret_data = "This is a secret! ".as_bytes();
+/// let secret_data = "This is a secret!".as_bytes();
 /// let hash = md5::compute_hash(secret_data);
 /// let secret_data_length = secret_data.len();
 /// 
