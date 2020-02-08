@@ -1,77 +1,4 @@
-#[derive(Clone)]
-struct SHA1 {
-	h0: u32,
-	h1: u32,
-	h2: u32,
-	h3: u32,
-	h4: u32
-}
-
-impl SHA1 {
-	fn apply_chunk(&mut self, chunk: &[u8]) {
-		assert_eq!(chunk.len(), 64);
-
-		let mut a: u32 = self.h0;
-		let mut b: u32 = self.h1;
-		let mut c: u32 = self.h2;
-		let mut d: u32 = self.h3;
-		let mut e: u32 = self.h4;
-
-		let mut w: [u32; 80] = [0; 80];
-		for i in 0..80 {
-			if i < 16 {
-				w[i] = u32::from_be_bytes([
-					chunk[4 * i + 0],
-					chunk[4 * i + 1],
-					chunk[4 * i + 2],
-					chunk[4 * i + 3]]);
-			} else {
-				w[i] = (w[i - 3] ^ w[i - 8] ^ w[i - 14] ^ w[i - 16]).rotate_left(1);
-			}
-		}
-		//println!("{:?}", &w[..]);
-
-		for i in 0..80 {
-			let (f, k) = match i {
-				 0..=19 => ((b & c) | ((!b) & d),        0x5a827999),
-				20..=39 => (b ^ c ^ d,                   0x6ed9eba1),
-				40..=59 => ((b & c) | (b & d) | (c & d), 0x8f1bbcdc),
-				60..=79 => (b ^ c ^ d,                   0xca62c1d6),
-				_ => unreachable!()
-			};
-
-			let temp = a.rotate_left(5)
-				.wrapping_add(f)
-				.wrapping_add(e)
-				.wrapping_add(k)
-				.wrapping_add(w[i]);
-
-			e = d;
-			d = c;
-			c = b.rotate_left(30);
-			b = a;
-			a = temp;
-		}
-
-		self.h0 = self.h0.wrapping_add(a);
-		self.h1 = self.h1.wrapping_add(b);
-		self.h2 = self.h2.wrapping_add(c);
-		self.h3 = self.h3.wrapping_add(d);
-		self.h4 = self.h4.wrapping_add(e);
-	}
-
-	fn hash_from_data(&self) -> [u8; 20] {
-		let mut result = Vec::<u8>::new();
-		result.extend_from_slice(&self.h0.to_be_bytes());
-		result.extend_from_slice(&self.h1.to_be_bytes());
-		result.extend_from_slice(&self.h2.to_be_bytes());
-		result.extend_from_slice(&self.h3.to_be_bytes());
-		result.extend_from_slice(&self.h4.to_be_bytes());
-		let mut res = [0; 20];
-		res.copy_from_slice(result.as_slice());
-		res
-	}
-}
+use crate::sha01;
 
 /// Compute the SHA-1 padding for the given input length.
 ///
@@ -105,14 +32,7 @@ impl SHA1 {
 /// }
 /// ```
 pub fn padding_for_length(input_length: usize) -> Vec<u8> {
-	let padding_length = padding_length_for_input_length(input_length);
-	let mut result = Vec::<u8>::with_capacity(padding_length);
-	result.push(0b1000_0000);
-	for _ in 0..(padding_length - 9) {
-		result.push(0b0000_0000);
-	}
-	result.extend_from_slice(&(input_length as u64).wrapping_mul(8).to_be_bytes());
-	result
+	sha01::padding_for_length(input_length)
 }
 
 /// Compute the SHA-1 padding length (in bytes) for the given input length.
@@ -139,11 +59,7 @@ pub fn padding_for_length(input_length: usize) -> Vec<u8> {
 /// assert_eq!(data.len() + padding_length, 64);
 /// ```
 pub fn padding_length_for_input_length(input_length: usize) -> usize {
-	if input_length % 64 <= 55 {
-		64 - input_length % 64
-	} else {
-		128 - input_length % 64
-	}
+	sha01::padding_length_for_input_length(input_length)
 }
 
 /// Compute the SHA-1 hash of the input data
@@ -168,23 +84,7 @@ pub fn padding_length_for_input_length(input_length: usize) -> usize {
 ///     0x3c, 0xb5, 0xaa, 0x46, 0x49, 0x2c, 0x8e, 0x11, 0x34, 0xb7]);
 /// ```
 pub fn compute_hash(input: &[u8]) -> [u8; 20] {
-	let mut sha1 = SHA1 {
-		h0: 0x67452301,
-		h1: 0xefcdab89,
-		h2: 0x98badcfe,
-		h3: 0x10325476,
-		h4: 0xc3d2e1f0
-	};
-
-	let mut data = Vec::<u8>::new();
-	data.extend_from_slice(input);
-	data.extend_from_slice(padding_for_length(input.len()).as_slice());
-	assert_eq!(data.len() % 64, 0);
-	for chunk in data.chunks_exact(64) {
-		sha1.apply_chunk(chunk);
-	}
-
-	sha1.hash_from_data()
+	sha01::compute_hash(input, sha01::HashType::SHA1)
 }
 
 /// Calculate a SHA-1 hash extension.
@@ -224,26 +124,7 @@ pub fn compute_hash(input: &[u8]) -> [u8; 20] {
 /// assert_eq!(combined_hash, sha1::compute_hash(combined_data.as_slice()));
 /// ```
 pub fn extend_hash(hash: [u8; 20], length: usize, additional_input: &[u8]) -> [u8; 20] {
-	let mut sha1 = SHA1 {
-		h0: u32::from_be_bytes([hash[0], hash[1], hash[2], hash[3]]),
-		h1: u32::from_be_bytes([hash[4], hash[5], hash[6], hash[7]]),
-		h2: u32::from_be_bytes([hash[8], hash[9], hash[10], hash[11]]),
-		h3: u32::from_be_bytes([hash[12], hash[13], hash[14], hash[15]]),
-		h4: u32::from_be_bytes([hash[16], hash[17], hash[18], hash[19]])
-	};
-
-	let len = length + padding_length_for_input_length(length) + additional_input.len();
-
-	let mut data = Vec::<u8>::new();
-	data.extend_from_slice(additional_input);
-	data.extend_from_slice(padding_for_length(len).as_slice());
-	assert_eq!(data.len() % 64, 0);
-
-	for chunk in data.chunks_exact(64) {
-		sha1.apply_chunk(chunk);
-	}
-
-	sha1.hash_from_data()
+	sha01::extend_hash(hash, length, additional_input, sha01::HashType::SHA1)
 }
 
 #[cfg(test)]

@@ -8,6 +8,7 @@
 Supported hash algorithms:
 
   * MD5
+  * SHA-0
   * SHA-1
 
 ## Usage
