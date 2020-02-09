@@ -31,7 +31,7 @@
 //! assert_eq!(combined_hash, sha256::compute_hash(combined_data.as_slice()));
 //! ```
 
-#![doc(html_root_url = "https://docs.rs/extendhash/0.2.3")]
+#![doc(html_root_url = "https://docs.rs/extendhash/0.2.4")]
 
 /// Compute MD5 hashes and hash extensions.
 ///
