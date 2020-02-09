@@ -41,7 +41,6 @@ impl SHA1 {
 				w[i] = (w[i - 3] ^ w[i - 8] ^ w[i - 14] ^ w[i - 16]).rotate_left(rotate_amount);
 			}
 		}
-		//println!("{:?}", &w[..]);
 
 		for i in 0..80 {
 			let (f, k) = match i {
