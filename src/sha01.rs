@@ -96,7 +96,7 @@ impl SHA1 {
 ///
 /// This function returns SHA-0/SHA-1 padding for the given input size. This
 /// padding has a length you can determine by calling
-/// `sha1::padding_length_for_input_length`.
+/// `sha01::padding_length_for_input_length`.
 pub fn padding_for_length(input_length: usize) -> Vec<u8> {
 	let padding_length = padding_length_for_input_length(input_length);
 	let mut result = Vec::<u8>::with_capacity(padding_length);
