@@ -11,6 +11,7 @@ Supported hash algorithms:
   * SHA-0
   * SHA-1
   * SHA-256
+  * SHA-512
 
 ## Usage
 
