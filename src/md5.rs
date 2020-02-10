@@ -56,9 +56,11 @@ impl MD5 {
                 chunk[(4 * g as usize + 0)],
                 chunk[(4 * g as usize + 1)],
                 chunk[(4 * g as usize + 2)],
-                chunk[(4 * g as usize + 3)]];
+                chunk[(4 * g as usize + 3)],
+            ];
 
-            f = f.wrapping_add(a)
+            f = f
+                .wrapping_add(a)
                 .wrapping_add(k[i as usize])
                 .wrapping_add(u32::from_le_bytes(slice));
 
