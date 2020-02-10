@@ -5,7 +5,7 @@
 [![docs.rs](https://docs.rs/extendhash/badge.svg)]
 (https://docs.rs/extendhash)
 
-**extendhash** is a Rust library to compute hash extensions.
+**extendhash** is a Rust library to compute hashes and hash extensions.
 
 Supported hash algorithms:
 
@@ -14,6 +14,8 @@ Supported hash algorithms:
   * SHA-1
   * SHA-256
   * SHA-512
+
+This crate is tested on Rust 1.41.0.
 
 ## Usage
 
