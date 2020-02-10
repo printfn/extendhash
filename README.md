@@ -1,9 +1,7 @@
 # extendhash
 
-[![crates.io](https://img.shields.io/crates/v/extendhash.svg)]
-(https://crates.io/crates/extendhash)
-[![docs.rs](https://docs.rs/extendhash/badge.svg)]
-(https://docs.rs/extendhash)
+[![crates.io](https://img.shields.io/crates/v/extendhash.svg)](https://crates.io/crates/extendhash)
+[![docs.rs](https://docs.rs/extendhash/badge.svg)](https://docs.rs/extendhash)
 
 **extendhash** is a Rust library to compute hashes and hash extensions.
 
