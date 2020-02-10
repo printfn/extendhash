@@ -11,32 +11,27 @@ impl MD5 {
         assert_eq!(chunk.len(), 64);
 
         let s: [u32; 64] = [
-            7, 12, 17, 22, 7, 12, 17, 22,
-            7, 12, 17, 22, 7, 12, 17, 22,
-            5,  9, 14, 20, 5,  9, 14, 20,
-            5,  9, 14, 20, 5,  9, 14, 20,
-            4, 11, 16, 23, 4, 11, 16, 23,
-            4, 11, 16, 23, 4, 11, 16, 23,
-            6, 10, 15, 21, 6, 10, 15, 21,
-            6, 10, 15, 21, 6, 10, 15, 21];
+            7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22,
+            5, 9, 14, 20, 5, 9, 14, 20, 5, 9, 14, 20, 5, 9, 14, 20, 4,
+            11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23, 6,
+            10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21,
+        ];
 
         let k: [u32; 64] = [
-            0xd76aa478, 0xe8c7b756, 0x242070db, 0xc1bdceee,
-            0xf57c0faf, 0x4787c62a, 0xa8304613, 0xfd469501,
-            0x698098d8, 0x8b44f7af, 0xffff5bb1, 0x895cd7be,
-            0x6b901122, 0xfd987193, 0xa679438e, 0x49b40821,
-            0xf61e2562, 0xc040b340, 0x265e5a51, 0xe9b6c7aa,
-            0xd62f105d, 0x02441453, 0xd8a1e681, 0xe7d3fbc8,
-            0x21e1cde6, 0xc33707d6, 0xf4d50d87, 0x455a14ed,
-            0xa9e3e905, 0xfcefa3f8, 0x676f02d9, 0x8d2a4c8a,
-            0xfffa3942, 0x8771f681, 0x6d9d6122, 0xfde5380c,
-            0xa4beea44, 0x4bdecfa9, 0xf6bb4b60, 0xbebfbc70,
-            0x289b7ec6, 0xeaa127fa, 0xd4ef3085, 0x04881d05,
-            0xd9d4d039, 0xe6db99e5, 0x1fa27cf8, 0xc4ac5665,
-            0xf4292244, 0x432aff97, 0xab9423a7, 0xfc93a039,
-            0x655b59c3, 0x8f0ccc92, 0xffeff47d, 0x85845dd1,
-            0x6fa87e4f, 0xfe2ce6e0, 0xa3014314, 0x4e0811a1,
-            0xf7537e82, 0xbd3af235, 0x2ad7d2bb, 0xeb86d391];
+            0xd76aa478, 0xe8c7b756, 0x242070db, 0xc1bdceee, 0xf57c0faf,
+            0x4787c62a, 0xa8304613, 0xfd469501, 0x698098d8, 0x8b44f7af,
+            0xffff5bb1, 0x895cd7be, 0x6b901122, 0xfd987193, 0xa679438e,
+            0x49b40821, 0xf61e2562, 0xc040b340, 0x265e5a51, 0xe9b6c7aa,
+            0xd62f105d, 0x02441453, 0xd8a1e681, 0xe7d3fbc8, 0x21e1cde6,
+            0xc33707d6, 0xf4d50d87, 0x455a14ed, 0xa9e3e905, 0xfcefa3f8,
+            0x676f02d9, 0x8d2a4c8a, 0xfffa3942, 0x8771f681, 0x6d9d6122,
+            0xfde5380c, 0xa4beea44, 0x4bdecfa9, 0xf6bb4b60, 0xbebfbc70,
+            0x289b7ec6, 0xeaa127fa, 0xd4ef3085, 0x04881d05, 0xd9d4d039,
+            0xe6db99e5, 0x1fa27cf8, 0xc4ac5665, 0xf4292244, 0x432aff97,
+            0xab9423a7, 0xfc93a039, 0x655b59c3, 0x8f0ccc92, 0xffeff47d,
+            0x85845dd1, 0x6fa87e4f, 0xfe2ce6e0, 0xa3014314, 0x4e0811a1,
+            0xf7537e82, 0xbd3af235, 0x2ad7d2bb, 0xeb86d391,
+        ];
 
         let mut a: u32 = self.a0;
         let mut b: u32 = self.b0;
@@ -45,11 +40,11 @@ impl MD5 {
 
         for i in 0..64 {
             let (mut f, g) = match i {
-                 0..=15 => ((b & c) | ((!b) & d),      i          ),
+                0..=15 => ((b & c) | ((!b) & d), i),
                 16..=31 => ((d & b) | ((!d) & c), (5 * i + 1) % 16),
-                32..=47 => (b ^ c ^ d,            (3 * i + 5) % 16),
-                48..=63 => (c ^ (b | (!d)),       (7 * i    ) % 16),
-                _ => unreachable!()
+                32..=47 => (b ^ c ^ d, (3 * i + 5) % 16),
+                48..=63 => (c ^ (b | (!d)), (7 * i) % 16),
+                _ => unreachable!(),
             };
 
             let slice = [
@@ -251,17 +246,15 @@ pub fn compute_hash(input: &[u8]) -> [u8; 16] {
 pub fn extend_hash(
     hash: [u8; 16],
     length: usize,
-    additional_input: &[u8]) -> [u8; 16] {
-
+    additional_input: &[u8],
+) -> [u8; 16] {
     let mut md5 = MD5 {
-        a0: u32::from_le_bytes(
-            [hash[ 0], hash[ 1], hash[ 2], hash[ 3]]),
-        b0: u32::from_le_bytes(
-            [hash[ 4], hash[ 5], hash[ 6], hash[ 7]]),
-        c0: u32::from_le_bytes(
-            [hash[ 8], hash[ 9], hash[10], hash[11]]),
-        d0: u32::from_le_bytes(
-            [hash[12], hash[13], hash[14], hash[15]])
+        a0: u32::from_le_bytes([hash[0], hash[1], hash[2], hash[3]]),
+        b0: u32::from_le_bytes([hash[4], hash[5], hash[6], hash[7]]),
+        c0: u32::from_le_bytes([hash[8], hash[9], hash[10], hash[11]]),
+        d0: u32::from_le_bytes([
+            hash[12], hash[13], hash[14], hash[15],
+        ]),
     };
 
     let len = length
@@ -286,41 +279,61 @@ mod tests {
 
     #[test]
     fn empty_hash() {
-        assert_eq!(md5::compute_hash(&[]), [
-            0xd4, 0x1d, 0x8c, 0xd9, 0x8f, 0x00, 0xb2, 0x04,
-            0xe9, 0x80, 0x09, 0x98, 0xec, 0xf8, 0x42, 0x7e]);
+        assert_eq!(
+            md5::compute_hash(&[]),
+            [
+                0xd4, 0x1d, 0x8c, 0xd9, 0x8f, 0x00, 0xb2, 0x04, 0xe9,
+                0x80, 0x09, 0x98, 0xec, 0xf8, 0x42, 0x7e
+            ]
+        );
     }
 
     #[test]
     fn a_test() {
-        assert_eq!(md5::compute_hash("a".as_bytes()), [
-            0x0c, 0xc1, 0x75, 0xb9, 0xc0, 0xf1, 0xb6, 0xa8,
-            0x31, 0xc3, 0x99, 0xe2, 0x69, 0x77, 0x26, 0x61]);
+        assert_eq!(
+            md5::compute_hash("a".as_bytes()),
+            [
+                0x0c, 0xc1, 0x75, 0xb9, 0xc0, 0xf1, 0xb6, 0xa8, 0x31,
+                0xc3, 0x99, 0xe2, 0x69, 0x77, 0x26, 0x61
+            ]
+        );
     }
 
     #[test]
     fn quick_brown_fox_test() {
         let s = "The quick brown fox jumps over the lazy dog";
-        assert_eq!(md5::compute_hash(s.as_bytes()), [
-            0x9e, 0x10, 0x7d, 0x9d, 0x37, 0x2b, 0xb6, 0x82,
-            0x6b, 0xd8, 0x1d, 0x35, 0x42, 0xa4, 0x19, 0xd6]);
+        assert_eq!(
+            md5::compute_hash(s.as_bytes()),
+            [
+                0x9e, 0x10, 0x7d, 0x9d, 0x37, 0x2b, 0xb6, 0x82, 0x6b,
+                0xd8, 0x1d, 0x35, 0x42, 0xa4, 0x19, 0xd6
+            ]
+        );
     }
 
     #[test]
     fn quick_brown_fox_test_2() {
         let s = "The quick brown fox jumps over the lazy dog.";
-        assert_eq!(md5::compute_hash(s.as_bytes()), [
-            0xe4, 0xd9, 0x09, 0xc2, 0x90, 0xd0, 0xfb, 0x1c,
-            0xa0, 0x68, 0xff, 0xad, 0xdf, 0x22, 0xcb, 0xd0]);
+        assert_eq!(
+            md5::compute_hash(s.as_bytes()),
+            [
+                0xe4, 0xd9, 0x09, 0xc2, 0x90, 0xd0, 0xfb, 0x1c, 0xa0,
+                0x68, 0xff, 0xad, 0xdf, 0x22, 0xcb, 0xd0
+            ]
+        );
     }
 
     #[test]
     fn abc_test() {
         let s = "ABCDEFGHIJKLMNOPQRSTUVWXYZ\
-            abcdefghijklmnopqrstuvwxyz0123456789";
-        assert_eq!(md5::compute_hash(s.as_bytes()), [
-            0xd1, 0x74, 0xab, 0x98, 0xd2, 0x77, 0xd9, 0xf5,
-            0xa5, 0x61, 0x1c, 0x2c, 0x9f, 0x41, 0x9d, 0x9f]);
+                 abcdefghijklmnopqrstuvwxyz0123456789";
+        assert_eq!(
+            md5::compute_hash(s.as_bytes()),
+            [
+                0xd1, 0x74, 0xab, 0x98, 0xd2, 0x77, 0xd9, 0xf5, 0xa5,
+                0x61, 0x1c, 0x2c, 0x9f, 0x41, 0x9d, 0x9f
+            ]
+        );
     }
 
     #[test]
@@ -330,9 +343,13 @@ mod tests {
             input.push_str("aaaaaaaaaaaaaaaaaaaaaaaaa");
         }
         assert_eq!(input.len(), 1_000_000);
-        assert_eq!(md5::compute_hash(input.as_bytes()), [
-            0x77, 0x07, 0xd6, 0xae, 0x4e, 0x02, 0x7c, 0x70,
-            0xee, 0xa2, 0xa9, 0x35, 0xc2, 0x29, 0x6f, 0x21]);
+        assert_eq!(
+            md5::compute_hash(input.as_bytes()),
+            [
+                0x77, 0x07, 0xd6, 0xae, 0x4e, 0x02, 0x7c, 0x70, 0xee,
+                0xa2, 0xa9, 0x35, 0xc2, 0x29, 0x6f, 0x21
+            ]
+        );
     }
 
     #[test]
@@ -354,22 +371,25 @@ mod tests {
         assert_eq!(md5::padding_length_for_input_length(128), 64);
         assert_eq!(
             md5::padding_length_for_input_length(64 * 100000),
-            64);
+            64
+        );
     }
 
     #[test]
     fn test_hash_ext_unknown_length() {
         let secret = "count=10&lat=37.351&user_id=1\
-            &long=-119.827&waffle=eggo".as_bytes();
+                      &long=-119.827&waffle=eggo"
+            .as_bytes();
         let hash = md5::compute_hash(secret);
 
         let appended_str = "&waffle=liege".as_bytes();
         let target_hash = [
-            0xf2, 0xf0, 0x69, 0x64, 0xeb, 0xbf, 0xc3, 0xdb,
-            0xa5, 0xe1, 0xfb, 0xfe, 0x35, 0x08, 0x21, 0x49];
+            0xf2, 0xf0, 0x69, 0x64, 0xeb, 0xbf, 0xc3, 0xdb, 0xa5, 0xe1,
+            0xfb, 0xfe, 0x35, 0x08, 0x21, 0x49,
+        ];
         for length in 0..100 {
-            let combined_hash = md5::extend_hash(
-                hash, length, appended_str);
+            let combined_hash =
+                md5::extend_hash(hash, length, appended_str);
             if combined_hash == target_hash {
                 return;
             }

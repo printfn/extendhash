@@ -46,14 +46,15 @@ impl SHA1 {
 
         for i in 0..80 {
             let (f, k) = match i {
-                 0..=19 => ((b & c) | ((!b) & d),        0x5a827999),
-                20..=39 => (b ^ c ^ d,                   0x6ed9eba1),
+                0..=19 => ((b & c) | ((!b) & d), 0x5a827999),
+                20..=39 => (b ^ c ^ d, 0x6ed9eba1),
                 40..=59 => ((b & c) | (b & d) | (c & d), 0x8f1bbcdc),
-                60..=79 => (b ^ c ^ d,                   0xca62c1d6),
-                _ => unreachable!()
+                60..=79 => (b ^ c ^ d, 0xca62c1d6),
+                _ => unreachable!(),
             };
 
-            let temp = a.rotate_left(5)
+            let temp = a
+                .rotate_left(5)
                 .wrapping_add(f)
                 .wrapping_add(e)
                 .wrapping_add(k)
@@ -185,17 +186,23 @@ pub fn extend_hash(
     hash: [u8; 20],
     length: usize,
     additional_input: &[u8],
-    hash_type: HashType) -> [u8; 20] {
-
+    hash_type: HashType,
+) -> [u8; 20] {
     let mut sha1 = SHA1 {
         h0: u32::from_be_bytes([hash[0], hash[1], hash[2], hash[3]]),
         h1: u32::from_be_bytes([hash[4], hash[5], hash[6], hash[7]]),
         h2: u32::from_be_bytes([hash[8], hash[9], hash[10], hash[11]]),
-        h3: u32::from_be_bytes([hash[12], hash[13], hash[14], hash[15]]),
-        h4: u32::from_be_bytes([hash[16], hash[17], hash[18], hash[19]])
+        h3: u32::from_be_bytes([
+            hash[12], hash[13], hash[14], hash[15],
+        ]),
+        h4: u32::from_be_bytes([
+            hash[16], hash[17], hash[18], hash[19],
+        ]),
     };
 
-    let len = length + padding_length_for_input_length(length) + additional_input.len();
+    let len = length
+        + padding_length_for_input_length(length)
+        + additional_input.len();
 
     let mut data = Vec::<u8>::new();
     data.extend_from_slice(additional_input);
@@ -216,38 +223,58 @@ mod tests {
 
     #[test]
     fn empty_hash() {
-        assert_eq!(sha01::compute_hash(&[], HashType::SHA1), [
-            0xda, 0x39, 0xa3, 0xee, 0x5e,
-            0x6b, 0x4b, 0x0d, 0x32, 0x55,
-            0xbf, 0xef, 0x95, 0x60, 0x18,
-            0x90, 0xaf, 0xd8, 0x07, 0x09]);
+        assert_eq!(
+            sha01::compute_hash(&[], HashType::SHA1),
+            [
+                0xda, 0x39, 0xa3, 0xee, 0x5e, 0x6b, 0x4b, 0x0d, 0x32,
+                0x55, 0xbf, 0xef, 0x95, 0x60, 0x18, 0x90, 0xaf, 0xd8,
+                0x07, 0x09
+            ]
+        );
     }
 
     #[test]
     fn a_test() {
-        assert_eq!(sha01::compute_hash("a".as_bytes(), HashType::SHA1), [
-            0x86, 0xf7, 0xe4, 0x37, 0xfa,
-            0xa5, 0xa7, 0xfc, 0xe1, 0x5d,
-            0x1d, 0xdc, 0xb9, 0xea, 0xea,
-            0xea, 0x37, 0x76, 0x67, 0xb8]);
+        assert_eq!(
+            sha01::compute_hash("a".as_bytes(), HashType::SHA1),
+            [
+                0x86, 0xf7, 0xe4, 0x37, 0xfa, 0xa5, 0xa7, 0xfc, 0xe1,
+                0x5d, 0x1d, 0xdc, 0xb9, 0xea, 0xea, 0xea, 0x37, 0x76,
+                0x67, 0xb8
+            ]
+        );
     }
 
     #[test]
     fn quick_brown_fox_test() {
-        assert_eq!(sha01::compute_hash("The quick brown fox jumps over the lazy dog".as_bytes(), HashType::SHA1), [
-            0x2f, 0xd4, 0xe1, 0xc6, 0x7a,
-            0x2d, 0x28, 0xfc, 0xed, 0x84,
-            0x9e, 0xe1, 0xbb, 0x76, 0xe7,
-            0x39, 0x1b, 0x93, 0xeb, 0x12]);
+        assert_eq!(
+            sha01::compute_hash(
+                "The quick brown fox jumps over the lazy dog"
+                    .as_bytes(),
+                HashType::SHA1
+            ),
+            [
+                0x2f, 0xd4, 0xe1, 0xc6, 0x7a, 0x2d, 0x28, 0xfc, 0xed,
+                0x84, 0x9e, 0xe1, 0xbb, 0x76, 0xe7, 0x39, 0x1b, 0x93,
+                0xeb, 0x12
+            ]
+        );
     }
 
     #[test]
     fn quick_brown_fox_test_2() {
-        assert_eq!(sha01::compute_hash("The quick brown fox jumps over the lazy cog".as_bytes(), HashType::SHA1), [
-            0xde, 0x9f, 0x2c, 0x7f, 0xd2,
-            0x5e, 0x1b, 0x3a, 0xfa, 0xd3,
-            0xe8, 0x5a, 0x0b, 0xd1, 0x7d,
-            0x9b, 0x10, 0x0d, 0xb4, 0xb3]);
+        assert_eq!(
+            sha01::compute_hash(
+                "The quick brown fox jumps over the lazy cog"
+                    .as_bytes(),
+                HashType::SHA1
+            ),
+            [
+                0xde, 0x9f, 0x2c, 0x7f, 0xd2, 0x5e, 0x1b, 0x3a, 0xfa,
+                0xd3, 0xe8, 0x5a, 0x0b, 0xd1, 0x7d, 0x9b, 0x10, 0x0d,
+                0xb4, 0xb3
+            ]
+        );
     }
 
     #[test]
@@ -264,15 +291,22 @@ mod tests {
     fn long_test() {
         let mut input = String::new();
         for _ in 0..10000 {
-            input.push_str("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
-            input.push_str("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+            input.push_str(
+                "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            );
+            input.push_str(
+                "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            );
         }
         assert_eq!(input.len(), 1_000_000);
-        assert_eq!(sha01::compute_hash(input.as_bytes(), HashType::SHA1), [
-            0x34, 0xaa, 0x97, 0x3c, 0xd4,
-            0xc4, 0xda, 0xa4, 0xf6, 0x1e,
-            0xeb, 0x2b, 0xdb, 0xad, 0x27,
-            0x31, 0x65, 0x34, 0x01, 0x6f]);
+        assert_eq!(
+            sha01::compute_hash(input.as_bytes(), HashType::SHA1),
+            [
+                0x34, 0xaa, 0x97, 0x3c, 0xd4, 0xc4, 0xda, 0xa4, 0xf6,
+                0x1e, 0xeb, 0x2b, 0xdb, 0xad, 0x27, 0x31, 0x65, 0x34,
+                0x01, 0x6f
+            ]
+        );
     }
 
     #[test]
@@ -294,23 +328,38 @@ mod tests {
         assert_eq!(sha01::padding_length_for_input_length(128), 64);
         assert_eq!(
             sha01::padding_length_for_input_length(64 * 100000),
-            64);
+            64
+        );
     }
 
     #[test]
     fn test_hash_ext() {
         let secret = "count=10&lat=37.351&user_id=1&\
-            long=-119.827&waffle=eggo".as_bytes();
+                      long=-119.827&waffle=eggo"
+            .as_bytes();
         let hash = sha01::compute_hash(secret, HashType::SHA1);
 
         let appended_str = "&waffle=liege".as_bytes();
-        let combined_hash = sha01::extend_hash(hash, secret.len(), appended_str, HashType::SHA1);
+        let combined_hash = sha01::extend_hash(
+            hash,
+            secret.len(),
+            appended_str,
+            HashType::SHA1,
+        );
 
         let mut concatenation = Vec::<u8>::new();
         concatenation.extend_from_slice(secret);
-        let intermediate_padding = sha01::padding_for_length(secret.len());
-        concatenation.extend_from_slice(intermediate_padding.as_slice());
+        let intermediate_padding =
+            sha01::padding_for_length(secret.len());
+        concatenation
+            .extend_from_slice(intermediate_padding.as_slice());
         concatenation.extend_from_slice(appended_str);
-        assert_eq!(combined_hash, sha01::compute_hash(concatenation.as_slice(), HashType::SHA1));
+        assert_eq!(
+            combined_hash,
+            sha01::compute_hash(
+                concatenation.as_slice(),
+                HashType::SHA1
+            )
+        );
     }
 }
