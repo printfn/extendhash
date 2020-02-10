@@ -54,7 +54,7 @@
 /// let appended_message = "Appended message.".as_bytes();
 /// let combined_hash = md5::extend_hash(
 ///     hash, secret_data_length, appended_message);
-/// 
+///
 /// // Now we verify that `combined_hash` matches the
 /// // concatenation (note the intermediate padding):
 /// let mut combined_data = Vec::<u8>::new();
