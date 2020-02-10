@@ -1,6 +1,6 @@
 [package]
 name = "extendhash"
-version = "1.0.0" # remember to update in lib.rs
+version = "1.0.1" # remember to update in lib.rs
 authors = ["printfn <printfn@users.noreply.github.com>"]
 edition = "2018"
 description = "Rust Hash Extender"
