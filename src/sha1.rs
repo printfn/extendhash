@@ -114,14 +114,14 @@ pub fn compute_hash(input: &[u8]) -> [u8; 20] {
 /// let secret_data = "This is a secret!".as_bytes();
 /// let hash = sha1::compute_hash(secret_data);
 /// let secret_data_length = secret_data.len();
-/// 
+///
 /// // Now we try computing a hash extension, assuming that
 /// // `secret_data` is not available. We only need `hash`
 /// // and `secret_data_length`.
 /// let appended_message = "Appended message.".as_bytes();
 /// let combined_hash = sha1::extend_hash(
 ///     hash, secret_data_length, appended_message);
-/// 
+///
 /// // Now we verify that `combined_hash` matches the
 /// // concatenation (note the intermediate padding):
 /// let mut combined_data = Vec::<u8>::new();
@@ -136,10 +136,14 @@ pub fn compute_hash(input: &[u8]) -> [u8; 20] {
 pub fn extend_hash(
     hash: [u8; 20],
     length: usize,
-    additional_input: &[u8]) -> [u8; 20] {
-
+    additional_input: &[u8],
+) -> [u8; 20] {
     sha01::extend_hash(
-        hash, length, additional_input, sha01::HashType::SHA1)
+        hash,
+        length,
+        additional_input,
+        sha01::HashType::SHA1,
+    )
 }
 
 #[cfg(test)]
@@ -248,6 +252,7 @@ mod tests {
         concatenation.extend_from_slice(appended_str);
         assert_eq!(
             combined_hash,
-            sha1::compute_hash(concatenation.as_slice()));
+            sha1::compute_hash(concatenation.as_slice())
+        );
     }
 }

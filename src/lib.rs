@@ -1,7 +1,7 @@
 //! **extendhash** is a Rust crate to compute hash extensions.
 //!
 //! Supported hash algorithms:
-//! 
+//!
 //!   * MD5
 //!   * SHA-0
 //!   * SHA-1
@@ -16,14 +16,14 @@
 //! let secret_data = "This is a secret!".as_bytes();
 //! let hash = sha256::compute_hash(secret_data);
 //! let secret_data_length = secret_data.len();
-//! 
+//!
 //! // Now we try computing a hash extension, assuming that
 //! // `secret_data` is not available. We only need `hash` and
 //! // `secret_data_length`.
 //! let appended_message = "Appended message.".as_bytes();
 //! let combined_hash = sha256::extend_hash(
 //!     hash, secret_data_length, appended_message);
-//! 
+//!
 //! // Now we verify that `combined_hash` matches the
 //! // concatenation (note the intermediate padding):
 //! let mut combined_data = Vec::<u8>::new();
@@ -47,7 +47,7 @@
 /// let secret_data = "This is a secret!".as_bytes();
 /// let hash = md5::compute_hash(secret_data);
 /// let secret_data_length = secret_data.len();
-/// 
+///
 /// // Now we try computing a hash extension, assuming that
 /// // `secret_data` is not available. We only need `hash` and
 /// // `secret_data_length`.
@@ -80,14 +80,14 @@ pub(crate) mod sha01;
 /// let secret_data = "This is a secret!".as_bytes();
 /// let hash = sha0::compute_hash(secret_data);
 /// let secret_data_length = secret_data.len();
-/// 
+///
 /// // Now we try computing a hash extension, assuming that
 /// // `secret_data` is not available. We only need `hash` and
 /// // `secret_data_length`.
 /// let appended_message = "Appended message.".as_bytes();
 /// let combined_hash = sha0::extend_hash(
 ///     hash, secret_data_length, appended_message);
-/// 
+///
 /// // Now we verify that `combined_hash` matches the
 /// // concatenation (note the intermediate padding):
 /// let mut combined_data = Vec::<u8>::new();
@@ -110,14 +110,14 @@ pub mod sha0;
 /// let secret_data = "This is a secret!".as_bytes();
 /// let hash = sha1::compute_hash(secret_data);
 /// let secret_data_length = secret_data.len();
-/// 
+///
 /// // Now we try computing a hash extension, assuming that
 /// // `secret_data` is not available. We only need `hash` and
 /// // `secret_data_length`.
 /// let appended_message = "Appended message.".as_bytes();
 /// let combined_hash = sha1::extend_hash(
 ///     hash, secret_data_length, appended_message);
-/// 
+///
 /// // Now we verify that `combined_hash` matches the
 /// // concatenation (note the intermediate padding):
 /// let mut combined_data = Vec::<u8>::new();
@@ -140,14 +140,14 @@ pub mod sha1;
 /// let secret_data = "This is a secret!".as_bytes();
 /// let hash = sha256::compute_hash(secret_data);
 /// let secret_data_length = secret_data.len();
-/// 
+///
 /// // Now we try computing a hash extension, assuming that
 /// // `secret_data` is not available. We only need `hash` and
 /// // `secret_data_length`.
 /// let appended_message = "Appended message.".as_bytes();
 /// let combined_hash = sha256::extend_hash(
 ///     hash, secret_data_length, appended_message);
-/// 
+///
 /// // Now we verify that `combined_hash` matches the
 /// // concatenation (note the intermediate padding):
 /// let mut combined_data = Vec::<u8>::new();
@@ -170,14 +170,14 @@ pub mod sha256;
 /// let secret_data = "This is a secret!".as_bytes();
 /// let hash = sha512::compute_hash(secret_data);
 /// let secret_data_length = secret_data.len();
-/// 
+///
 /// // Now we try computing a hash extension, assuming that
 /// // `secret_data` is not available. We only need `hash` and
 /// // `secret_data_length`.
 /// let appended_message = "Appended message.".as_bytes();
 /// let combined_hash = sha512::extend_hash(
 ///     hash, secret_data_length, appended_message);
-/// 
+///
 /// // Now we verify that `combined_hash` matches the
 /// // concatenation (note the intermediate padding):
 /// let mut combined_data = Vec::<u8>::new();

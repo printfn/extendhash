@@ -6,13 +6,13 @@ struct SHA1 {
     h1: u32,
     h2: u32,
     h3: u32,
-    h4: u32
+    h4: u32,
 }
 
 #[derive(Copy, Clone)]
 pub enum HashType {
     SHA0,
-    SHA1
+    SHA1,
 }
 
 impl SHA1 {
@@ -32,7 +32,8 @@ impl SHA1 {
                     chunk[4 * i + 0],
                     chunk[4 * i + 1],
                     chunk[4 * i + 2],
-                    chunk[4 * i + 3]]);
+                    chunk[4 * i + 3],
+                ]);
             } else {
                 let rotate_amount = match hash_type {
                     HashType::SHA0 => 0,
@@ -106,7 +107,8 @@ pub fn padding_for_length(input_length: usize) -> Vec<u8> {
         result.push(0b0000_0000);
     }
     result.extend_from_slice(
-        &(input_length as u64).wrapping_mul(8).to_be_bytes());
+        &(input_length as u64).wrapping_mul(8).to_be_bytes(),
+    );
     result
 }
 
@@ -149,7 +151,7 @@ pub fn compute_hash(input: &[u8], hash_type: HashType) -> [u8; 20] {
         h1: 0xefcdab89,
         h2: 0x98badcfe,
         h3: 0x10325476,
-        h4: 0xc3d2e1f0
+        h4: 0xc3d2e1f0,
     };
 
     let mut data = Vec::<u8>::new();

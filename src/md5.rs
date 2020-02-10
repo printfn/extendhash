@@ -3,7 +3,7 @@ struct MD5 {
     a0: u32,
     b0: u32,
     c0: u32,
-    d0: u32
+    d0: u32,
 }
 
 impl MD5 {
@@ -125,7 +125,8 @@ pub fn padding_for_length(input_length: usize) -> Vec<u8> {
         result.push(0b0000_0000);
     }
     result.extend_from_slice(
-        &(input_length as u64).wrapping_mul(8).to_le_bytes());
+        &(input_length as u64).wrapping_mul(8).to_le_bytes(),
+    );
     result
 }
 
@@ -188,7 +189,7 @@ pub fn compute_hash(input: &[u8]) -> [u8; 16] {
         a0: 0x67452301,
         b0: 0xefcdab89,
         c0: 0x98badcfe,
-        d0: 0x10325476
+        d0: 0x10325476,
     };
 
     let mut data = Vec::<u8>::new();
@@ -226,14 +227,14 @@ pub fn compute_hash(input: &[u8]) -> [u8; 16] {
 /// let secret_data = "This is a secret!".as_bytes();
 /// let hash = md5::compute_hash(secret_data);
 /// let secret_data_length = secret_data.len();
-/// 
+///
 /// // Now we try computing a hash extension, assuming that
 /// // `secret_data` is not available. We only need `hash` and
 /// // `secret_data_length`.
 /// let appended_message = "Appended message.".as_bytes();
 /// let combined_hash = md5::extend_hash(
 ///     hash, secret_data_length, appended_message);
-/// 
+///
 /// // Now we verify that `combined_hash` matches the
 /// // concatenation (note the intermediate padding):
 /// let mut combined_data = Vec::<u8>::new();

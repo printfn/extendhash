@@ -1,6 +1,6 @@
 #[derive(Clone)]
 struct SHA512 {
-    h: [u64; 8]
+    h: [u64; 8],
 }
 
 impl SHA512 {
@@ -57,7 +57,8 @@ impl SHA512 {
                     chunk[8 * i + 4],
                     chunk[8 * i + 5],
                     chunk[8 * i + 6],
-                    chunk[8 * i + 7]]);
+                    chunk[8 * i + 7],
+                ]);
             } else {
                 let s0 = w[i - 15].rotate_right(1)
                     ^ w[i - 15].rotate_right(8)
@@ -78,8 +79,10 @@ impl SHA512 {
                 ^ e.rotate_right(41);
             let ch = (e & f) ^ ((!e) & g);
             let temp1 = h
-                .wrapping_add(s1).wrapping_add(ch)
-                .wrapping_add(k[i]).wrapping_add(w[i]);
+                .wrapping_add(s1)
+                .wrapping_add(ch)
+                .wrapping_add(k[i])
+                .wrapping_add(w[i]);
             let s0 = a.rotate_right(28)
                 ^ a.rotate_right(34)
                 ^ a.rotate_right(39);
@@ -161,7 +164,8 @@ pub fn padding_for_length(input_length: usize) -> Vec<u8> {
         result.push(0b0000_0000);
     }
     result.extend_from_slice(
-        &(input_length as u128).wrapping_mul(8).to_be_bytes());
+        &(input_length as u128).wrapping_mul(8).to_be_bytes(),
+    );
     result
 }
 
@@ -270,14 +274,14 @@ pub fn compute_hash(input: &[u8]) -> [u8; 64] {
 /// let secret_data = "This is a secret!".as_bytes();
 /// let hash = sha512::compute_hash(secret_data);
 /// let secret_data_length = secret_data.len();
-/// 
+///
 /// // Now we try computing a hash extension, assuming that
 /// // `secret_data` is not available. We only need `hash`
 /// // and `secret_data_length`.
 /// let appended_message = "Appended message.".as_bytes();
 /// let combined_hash = sha512::extend_hash(
 ///     hash, secret_data_length, appended_message);
-/// 
+///
 /// // Now we verify that `combined_hash` matches the
 /// // concatenation (note the intermediate padding):
 /// let mut combined_data = Vec::<u8>::new();
@@ -471,6 +475,7 @@ mod tests {
         concatenation.extend_from_slice(appended_str);
         assert_eq!(
             &combined_hash[..],
-            &sha512::compute_hash(concatenation.as_slice())[..]);
+            &sha512::compute_hash(concatenation.as_slice())[..]
+        );
     }
 }
