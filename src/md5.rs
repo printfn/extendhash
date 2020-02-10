@@ -11,10 +11,14 @@ impl MD5 {
 		assert_eq!(chunk.len(), 64);
 
 		let s: [u32; 64] = [
-			7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22,
-			5,  9, 14, 20, 5,  9, 14, 20, 5,  9, 14, 20, 5,  9, 14, 20,
-			4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23,
-			6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21];
+			7, 12, 17, 22, 7, 12, 17, 22,
+			7, 12, 17, 22, 7, 12, 17, 22,
+			5,  9, 14, 20, 5,  9, 14, 20,
+			5,  9, 14, 20, 5,  9, 14, 20,
+			4, 11, 16, 23, 4, 11, 16, 23,
+			4, 11, 16, 23, 4, 11, 16, 23,
+			6, 10, 15, 21, 6, 10, 15, 21,
+			6, 10, 15, 21, 6, 10, 15, 21];
 
 		let k: [u32; 64] = [
 			0xd76aa478, 0xe8c7b756, 0x242070db, 0xc1bdceee,
@@ -54,7 +58,9 @@ impl MD5 {
 				chunk[(4 * g as usize + 2)],
 				chunk[(4 * g as usize + 3)]];
 
-			f = f.wrapping_add(a).wrapping_add(k[i as usize]).wrapping_add(u32::from_le_bytes(slice));
+			f = f.wrapping_add(a)
+				.wrapping_add(k[i as usize])
+				.wrapping_add(u32::from_le_bytes(slice));
 
 			a = d;
 			d = c;
@@ -84,14 +90,14 @@ impl MD5 {
 ///
 /// # Arguments
 ///
-/// * `input_length` - The length of the input length. This value is needed
-///     to determine the padding length, and to embed the length in the last
-///     8 bytes of padding.
+/// * `input_length` - The length of the input length. This value is
+///     needed to determine the padding length, and to embed the length
+///     in the last 8 bytes of padding.
 ///
 /// # Returns
 ///
-/// This function returns MD5 padding for the given input size. This padding
-/// has a length you can determine by calling
+/// This function returns MD5 padding for the given input size. This
+/// padding has a length you can determine by calling
 /// `md5::padding_length_for_input_length`.
 ///
 /// # Example
@@ -118,19 +124,21 @@ pub fn padding_for_length(input_length: usize) -> Vec<u8> {
 	for _ in 0..(padding_length - 9) {
 		result.push(0b0000_0000);
 	}
-	result.extend_from_slice(&(input_length as u64).wrapping_mul(8).to_le_bytes());
+	result.extend_from_slice(
+		&(input_length as u64).wrapping_mul(8).to_le_bytes());
 	result
 }
 
-/// Compute the MD5 padding length (in bytes) for the given input length.
+/// Compute the MD5 padding length (in bytes) for the given
+/// input length.
 ///
 /// The result is always between 9 and 72 (inclusive).
 ///
 /// # Arguments
 ///
-/// * `input_length` - The length of the input length. This value is used
-///     because the amount of padding is always such that the total padded
-///     string is a multiple of 64 bytes.
+/// * `input_length` - The length of the input length. This value is
+///     used because the amount of padding is always such that the
+///     total padded string is a multiple of 64 bytes.
 ///
 /// # Returns
 ///
@@ -142,7 +150,8 @@ pub fn padding_for_length(input_length: usize) -> Vec<u8> {
 /// ```
 /// # use extendhash::md5;
 /// let data = "This string will be hashed.";
-/// let padding_length = md5::padding_length_for_input_length(data.len());
+/// let padding_length =
+///     md5::padding_length_for_input_length(data.len());
 /// assert_eq!(data.len() + padding_length, 64);
 /// ```
 pub fn padding_length_for_input_length(input_length: usize) -> usize {
@@ -157,8 +166,8 @@ pub fn padding_length_for_input_length(input_length: usize) -> usize {
 ///
 /// # Arguments
 ///
-/// * `input` - The input data to be hashed - this could be a UTF-8 string
-///     or any other binary data.
+/// * `input` - The input data to be hashed - this could be a UTF-8
+///     string or any other binary data.
 ///
 /// # Returns
 ///
@@ -198,14 +207,17 @@ pub fn compute_hash(input: &[u8]) -> [u8; 16] {
 /// # Arguments
 ///
 /// * `hash` - The MD5 hash of some previous (unknown) data
-/// * `length` - The length of the unknown data (without any added padding)
-/// * `additional_input` - Additional input to be included in the new hash.
+/// * `length` - The length of the unknown data (without any
+///       added padding)
+/// * `additional_input` - Additional input to be
+///       included in the new hash.
 ///
 /// # Returns
 ///
-/// This function returns the MD5 hash of the concatenation of the original
-/// unknown data, its padding, and the `additional_input`.
-/// You can see the included (intermediate) padding by calling `md5::padding_for_length`.
+/// This function returns the MD5 hash of the concatenation of the
+/// original unknown data, its padding, and the `additional_input`.
+/// You can see the included (intermediate) padding by calling
+/// `md5::padding_for_length`.
 ///
 /// # Example
 ///
@@ -215,29 +227,43 @@ pub fn compute_hash(input: &[u8]) -> [u8; 16] {
 /// let hash = md5::compute_hash(secret_data);
 /// let secret_data_length = secret_data.len();
 /// 
-/// // Now we try computing a hash extension, assuming that `secret_data`
-/// // is not available. We only need `hash` and `secret_data_length`.
+/// // Now we try computing a hash extension, assuming that
+/// // `secret_data` is not available. We only need `hash` and
+/// // `secret_data_length`.
 /// let appended_message = "Appended message.".as_bytes();
-/// let combined_hash = md5::extend_hash(hash, secret_data_length, appended_message);
+/// let combined_hash = md5::extend_hash(
+///     hash, secret_data_length, appended_message);
 /// 
 /// // Now we verify that `combined_hash` matches the
 /// // concatenation (note the intermediate padding):
 /// let mut combined_data = Vec::<u8>::new();
 /// combined_data.extend_from_slice(secret_data);
-/// let intermediate_padding = md5::padding_for_length(secret_data_length);
-/// combined_data.extend_from_slice(intermediate_padding.as_slice());
+/// let padding = md5::padding_for_length(secret_data_length);
+/// combined_data.extend_from_slice(padding.as_slice());
 /// combined_data.extend_from_slice(appended_message);
-/// assert_eq!(combined_hash, md5::compute_hash(combined_data.as_slice()));
+/// assert_eq!(
+///     combined_hash,
+///     md5::compute_hash(combined_data.as_slice()));
 /// ```
-pub fn extend_hash(hash: [u8; 16], length: usize, additional_input: &[u8]) -> [u8; 16] {
+pub fn extend_hash(
+	hash: [u8; 16],
+	length: usize,
+	additional_input: &[u8]) -> [u8; 16] {
+
 	let mut md5 = MD5 {
-		a0: u32::from_le_bytes([hash[0], hash[1], hash[2], hash[3]]),
-		b0: u32::from_le_bytes([hash[4], hash[5], hash[6], hash[7]]),
-		c0: u32::from_le_bytes([hash[8], hash[9], hash[10], hash[11]]),
-		d0: u32::from_le_bytes([hash[12], hash[13], hash[14], hash[15]])
+		a0: u32::from_le_bytes(
+			[hash[ 0], hash[ 1], hash[ 2], hash[ 3]]),
+		b0: u32::from_le_bytes(
+			[hash[ 4], hash[ 5], hash[ 6], hash[ 7]]),
+		c0: u32::from_le_bytes(
+			[hash[ 8], hash[ 9], hash[10], hash[11]]),
+		d0: u32::from_le_bytes(
+			[hash[12], hash[13], hash[14], hash[15]])
 	};
 
-	let len = length + padding_length_for_input_length(length) + additional_input.len();
+	let len = length
+		+ padding_length_for_input_length(length)
+		+ additional_input.len();
 
 	let mut data = Vec::<u8>::new();
 	data.extend_from_slice(additional_input);
@@ -271,22 +297,25 @@ mod tests {
 
 	#[test]
 	fn quick_brown_fox_test() {
-		assert_eq!(md5::compute_hash("The quick brown fox jumps over the lazy dog".as_bytes()), [
+		let s = "The quick brown fox jumps over the lazy dog";
+		assert_eq!(md5::compute_hash(s.as_bytes()), [
 			0x9e, 0x10, 0x7d, 0x9d, 0x37, 0x2b, 0xb6, 0x82,
 			0x6b, 0xd8, 0x1d, 0x35, 0x42, 0xa4, 0x19, 0xd6]);
 	}
 
 	#[test]
 	fn quick_brown_fox_test_2() {
-		assert_eq!(md5::compute_hash("The quick brown fox jumps over the lazy dog.".as_bytes()), [
+		let s = "The quick brown fox jumps over the lazy dog.";
+		assert_eq!(md5::compute_hash(s.as_bytes()), [
 			0xe4, 0xd9, 0x09, 0xc2, 0x90, 0xd0, 0xfb, 0x1c,
 			0xa0, 0x68, 0xff, 0xad, 0xdf, 0x22, 0xcb, 0xd0]);
 	}
 
 	#[test]
 	fn abc_test() {
-		assert_eq!(md5::compute_hash(
-			"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".as_bytes()), [
+		let s = "ABCDEFGHIJKLMNOPQRSTUVWXYZ\
+			abcdefghijklmnopqrstuvwxyz0123456789";
+		assert_eq!(md5::compute_hash(s.as_bytes()), [
 			0xd1, 0x74, 0xab, 0x98, 0xd2, 0x77, 0xd9, 0xf5,
 			0xa5, 0x61, 0x1c, 0x2c, 0x9f, 0x41, 0x9d, 0x9f]);
 	}
@@ -294,9 +323,8 @@ mod tests {
 	#[test]
 	fn long_test() {
 		let mut input = String::new();
-		for _ in 0..10000 {
-			input.push_str("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
-			input.push_str("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+		for _ in 0..40000 {
+			input.push_str("aaaaaaaaaaaaaaaaaaaaaaaaa");
 		}
 		assert_eq!(input.len(), 1_000_000);
 		assert_eq!(md5::compute_hash(input.as_bytes()), [
@@ -321,20 +349,24 @@ mod tests {
 		assert_eq!(md5::padding_length_for_input_length(63), 64 + 1);
 		assert_eq!(md5::padding_length_for_input_length(64), 64);
 		assert_eq!(md5::padding_length_for_input_length(128), 64);
-		assert_eq!(md5::padding_length_for_input_length(64 * 100000), 64);
+		assert_eq!(
+			md5::padding_length_for_input_length(64 * 100000),
+			64);
 	}
 
 	#[test]
 	fn test_hash_ext_unknown_length() {
-		let secret = "count=10&lat=37.351&user_id=1&long=-119.827&waffle=eggo".as_bytes();
+		let secret = "count=10&lat=37.351&user_id=1\
+			&long=-119.827&waffle=eggo".as_bytes();
 		let hash = md5::compute_hash(secret);
 
 		let appended_str = "&waffle=liege".as_bytes();
 		let target_hash = [
-			242, 240, 105, 100, 235, 191, 195, 219,
-			165, 225, 251, 254, 53, 8, 33, 73];
+			0xf2, 0xf0, 0x69, 0x64, 0xeb, 0xbf, 0xc3, 0xdb,
+			0xa5, 0xe1, 0xfb, 0xfe, 0x35, 0x08, 0x21, 0x49];
 		for length in 0..100 {
-			let combined_hash = md5::extend_hash(hash, length, appended_str);
+			let combined_hash = md5::extend_hash(
+				hash, length, appended_str);
 			if combined_hash == target_hash {
 				return;
 			}

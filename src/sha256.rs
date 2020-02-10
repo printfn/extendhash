@@ -58,12 +58,16 @@ impl SHA256 {
 		}
 
 		for i in 0..64 {
-			let s1 = e.rotate_right(6) ^ e.rotate_right(11) ^ e.rotate_right(25);
+			let s1 = e.rotate_right(6)
+				^ e.rotate_right(11)
+				^ e.rotate_right(25);
 			let ch = (e & f) ^ ((!e) & g);
 			let temp1 = h
 				.wrapping_add(s1).wrapping_add(ch)
 				.wrapping_add(k[i]).wrapping_add(w[i]);
-			let s0 = a.rotate_right(2) ^ a.rotate_right(13) ^ a.rotate_right(22);
+			let s0 = a.rotate_right(2)
+				^ a.rotate_right(13)
+				^ a.rotate_right(22);
 			let maj = (a & b) ^ (a & c) ^ (b & c);
 			let temp2 = s0.wrapping_add(maj);
 
@@ -107,14 +111,14 @@ impl SHA256 {
 ///
 /// # Arguments
 ///
-/// * `input_length` - The length of the input length. This value is needed
-///     to determine the padding length, and to embed the length in the last
-///     8 bytes of padding.
+/// * `input_length` - The length of the input length. This value
+///     is needed to determine the padding length, and to embed
+///     the length in the last 8 bytes of padding.
 ///
 /// # Returns
 ///
-/// This function returns SHA-256 padding for the given input size. This
-/// padding has a length you can determine by calling
+/// This function returns SHA-256 padding for the given input size.
+/// This padding has a length you can determine by calling
 /// `sha256::padding_length_for_input_length`.
 ///
 /// # Example
@@ -141,19 +145,21 @@ pub fn padding_for_length(input_length: usize) -> Vec<u8> {
 	for _ in 0..(padding_length - 9) {
 		result.push(0b0000_0000);
 	}
-	result.extend_from_slice(&(input_length as u64).wrapping_mul(8).to_be_bytes());
+	result.extend_from_slice(
+		&(input_length as u64).wrapping_mul(8).to_be_bytes());
 	result
 }
 
-/// Compute the SHA-256 padding length (in bytes) for the given input length.
+/// Compute the SHA-256 padding length (in bytes) for the
+/// given input length.
 ///
 /// The result is always between 9 and 72 (inclusive).
 ///
 /// # Arguments
 ///
-/// * `input_length` - The length of the input length. This value is used
-///     because the amount of padding is always such that the total padded
-///     string is a multiple of 64 bytes.
+/// * `input_length` - The length of the input length. This value
+///     is used because the amount of padding is always such that the
+///     total padded string is a multiple of 64 bytes.
 ///
 /// # Returns
 ///
@@ -165,7 +171,8 @@ pub fn padding_for_length(input_length: usize) -> Vec<u8> {
 /// ```
 /// # use extendhash::sha256;
 /// let data = "This string will be hashed.";
-/// let padding_length = sha256::padding_length_for_input_length(data.len());
+/// let padding_length =
+///     sha256::padding_length_for_input_length(data.len());
 /// assert_eq!(data.len() + padding_length, 64);
 /// ```
 pub fn padding_length_for_input_length(input_length: usize) -> usize {
@@ -180,8 +187,8 @@ pub fn padding_length_for_input_length(input_length: usize) -> usize {
 ///
 /// # Arguments
 ///
-/// * `input` - The input data to be hashed - this could be a UTF-8 string
-///     or any other binary data.
+/// * `input` - The input data to be hashed - this could be a
+///     UTF-8 string or any other binary data.
 ///
 /// # Returns
 ///
@@ -223,14 +230,17 @@ pub fn compute_hash(input: &[u8]) -> [u8; 32] {
 /// # Arguments
 ///
 /// * `hash` - The SHA-256 hash of some previous (unknown) data
-/// * `length` - The length of the unknown data (without any added padding)
-/// * `additional_input` - Additional input to be included in the new hash.
+/// * `length` - The length of the unknown data (without any
+///       added padding)
+/// * `additional_input` - Additional input to be
+///       included in the new hash.
 ///
 /// # Returns
 ///
-/// This function returns the SHA-256 hash of the concatenation of the original
-/// unknown data, its padding, and the `additional_input`.
-/// You can see the included (intermediate) padding by calling `sha256::padding_for_length`.
+/// This function returns the SHA-256 hash of the concatenation of
+/// the original unknown data, its padding, and the `additional_input`.
+/// You can see the included (intermediate) padding by
+/// calling `sha256::padding_for_length`.
 ///
 /// # Example
 ///
@@ -240,35 +250,53 @@ pub fn compute_hash(input: &[u8]) -> [u8; 32] {
 /// let hash = sha256::compute_hash(secret_data);
 /// let secret_data_length = secret_data.len();
 /// 
-/// // Now we try computing a hash extension, assuming that `secret_data`
-/// // is not available. We only need `hash` and `secret_data_length`.
+/// // Now we try computing a hash extension, assuming that
+/// // `secret_data` is not available. We only need `hash`
+/// // and `secret_data_length`.
 /// let appended_message = "Appended message.".as_bytes();
-/// let combined_hash = sha256::extend_hash(hash, secret_data_length, appended_message);
+/// let combined_hash = sha256::extend_hash(
+///     hash, secret_data_length, appended_message);
 /// 
 /// // Now we verify that `combined_hash` matches the
 /// // concatenation (note the intermediate padding):
 /// let mut combined_data = Vec::<u8>::new();
 /// combined_data.extend_from_slice(secret_data);
-/// let intermediate_padding = sha256::padding_for_length(secret_data_length);
-/// combined_data.extend_from_slice(intermediate_padding.as_slice());
+/// let padding = sha256::padding_for_length(secret_data_length);
+/// combined_data.extend_from_slice(padding.as_slice());
 /// combined_data.extend_from_slice(appended_message);
-/// assert_eq!(combined_hash, sha256::compute_hash(combined_data.as_slice()));
+/// assert_eq!(
+///     combined_hash,
+///     sha256::compute_hash(combined_data.as_slice()));
 /// ```
-pub fn extend_hash(hash: [u8; 32], length: usize, additional_input: &[u8]) -> [u8; 32] {
+pub fn extend_hash(
+	hash: [u8; 32],
+	length: usize,
+	additional_input: &[u8]) -> [u8; 32] {
+
 	let mut sha256 = SHA256 {
 		h: [
-			u32::from_be_bytes([hash[0], hash[1], hash[2], hash[3]]),
-			u32::from_be_bytes([hash[4], hash[5], hash[6], hash[7]]),
-			u32::from_be_bytes([hash[8], hash[9], hash[10], hash[11]]),
-			u32::from_be_bytes([hash[12], hash[13], hash[14], hash[15]]),
-			u32::from_be_bytes([hash[16], hash[17], hash[18], hash[19]]),
-			u32::from_be_bytes([hash[20], hash[21], hash[22], hash[23]]),
-			u32::from_be_bytes([hash[24], hash[25], hash[26], hash[27]]),
-			u32::from_be_bytes([hash[28], hash[29], hash[30], hash[31]]),
+			u32::from_be_bytes(
+				[hash[ 0], hash[ 1], hash[ 2], hash[ 3]]),
+			u32::from_be_bytes(
+				[hash[ 4], hash[ 5], hash[ 6], hash[ 7]]),
+			u32::from_be_bytes(
+				[hash[ 8], hash[ 9], hash[10], hash[11]]),
+			u32::from_be_bytes(
+				[hash[12], hash[13], hash[14], hash[15]]),
+			u32::from_be_bytes(
+				[hash[16], hash[17], hash[18], hash[19]]),
+			u32::from_be_bytes(
+				[hash[20], hash[21], hash[22], hash[23]]),
+			u32::from_be_bytes(
+				[hash[24], hash[25], hash[26], hash[27]]),
+			u32::from_be_bytes(
+				[hash[28], hash[29], hash[30], hash[31]]),
 		]
 	};
 
-	let len = length + padding_length_for_input_length(length) + additional_input.len();
+	let len = length
+		+ padding_length_for_input_length(length)
+		+ additional_input.len();
 
 	let mut data = Vec::<u8>::new();
 	data.extend_from_slice(additional_input);
@@ -306,7 +334,8 @@ mod tests {
 
 	#[test]
 	fn quick_brown_fox_test() {
-		assert_eq!(sha256::compute_hash("The quick brown fox jumps over the lazy dog".as_bytes()), [
+		let s = "The quick brown fox jumps over the lazy dog";
+		assert_eq!(sha256::compute_hash(s.as_bytes()), [
 			0xd7, 0xa8, 0xfb, 0xb3, 0x07, 0xd7, 0x80, 0x94,
 			0x69, 0xca, 0x9a, 0xbc, 0xb0, 0x08, 0x2e, 0x4f,
 			0x8d, 0x56, 0x51, 0xe4, 0x6d, 0x3c, 0xdb, 0x76,
@@ -315,7 +344,8 @@ mod tests {
 
 	#[test]
 	fn quick_brown_fox_test_2() {
-		assert_eq!(sha256::compute_hash("The quick brown fox jumps over the lazy cog".as_bytes()), [
+		let s = "The quick brown fox jumps over the lazy cog";
+		assert_eq!(sha256::compute_hash(s.as_bytes()), [
 			0xe4, 0xc4, 0xd8, 0xf3, 0xbf, 0x76, 0xb6, 0x92,
 			0xde, 0x79, 0x1a, 0x17, 0x3e, 0x05, 0x32, 0x11,
 			0x50, 0xf7, 0xa3, 0x45, 0xb4, 0x64, 0x84, 0xfe,
@@ -324,8 +354,9 @@ mod tests {
 
 	#[test]
 	fn abc_test() {
-		assert_eq!(sha256::compute_hash(
-			"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".as_bytes()), [
+		let s = "ABCDEFGHIJKLMNOPQRSTUVWXYZ\
+			abcdefghijklmnopqrstuvwxyz0123456789";
+		assert_eq!(sha256::compute_hash(s.as_bytes()), [
 			0xdb, 0x4b, 0xfc, 0xbd, 0x4d, 0xa0, 0xcd, 0x85,
 			0xa6, 0x0c, 0x3c, 0x37, 0xd3, 0xfb, 0xd8, 0x80,
 			0x5c, 0x77, 0xf1, 0x5f, 0xc6, 0xb1, 0xfd, 0xfe,
@@ -335,9 +366,8 @@ mod tests {
 	#[test]
 	fn long_test() {
 		let mut input = String::new();
-		for _ in 0..10000 {
-			input.push_str("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
-			input.push_str("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+		for _ in 0..40000 {
+			input.push_str("aaaaaaaaaaaaaaaaaaaaaaaaa");
 		}
 		assert_eq!(input.len(), 1_000_000);
 		assert_eq!(sha256::compute_hash(input.as_bytes()), [
@@ -364,22 +394,28 @@ mod tests {
 		assert_eq!(sha256::padding_length_for_input_length(63), 64 + 1);
 		assert_eq!(sha256::padding_length_for_input_length(64), 64);
 		assert_eq!(sha256::padding_length_for_input_length(128), 64);
-		assert_eq!(sha256::padding_length_for_input_length(64 * 100000), 64);
+		assert_eq!(
+			sha256::padding_length_for_input_length(64 * 100000),
+			64);
 	}
 
 	#[test]
 	fn test_hash_ext() {
-		let secret = "count=10&lat=37.351&user_id=1&long=-119.827&waffle=eggo".as_bytes();
+		let secret = "count=10&lat=37.351&user_id=1&\
+			long=-119.827&waffle=eggo".as_bytes();
 		let hash = sha256::compute_hash(secret);
 
 		let appended_str = "&waffle=liege".as_bytes();
-		let combined_hash = sha256::extend_hash(hash, secret.len(), appended_str);
+		let combined_hash = sha256::extend_hash(
+			hash, secret.len(), appended_str);
 
 		let mut concatenation = Vec::<u8>::new();
 		concatenation.extend_from_slice(secret);
-		let intermediate_padding = sha256::padding_for_length(secret.len());
-		concatenation.extend_from_slice(intermediate_padding.as_slice());
+		let padding = sha256::padding_for_length(secret.len());
+		concatenation.extend_from_slice(padding.as_slice());
 		concatenation.extend_from_slice(appended_str);
-		assert_eq!(combined_hash, sha256::compute_hash(concatenation.as_slice()));
+		assert_eq!(
+			combined_hash,
+			sha256::compute_hash(concatenation.as_slice()));
 	}
 }

@@ -73,12 +73,16 @@ impl SHA512 {
 		}
 
 		for i in 0..80 {
-			let s1 = e.rotate_right(14) ^ e.rotate_right(18) ^ e.rotate_right(41);
+			let s1 = e.rotate_right(14)
+				^ e.rotate_right(18)
+				^ e.rotate_right(41);
 			let ch = (e & f) ^ ((!e) & g);
 			let temp1 = h
 				.wrapping_add(s1).wrapping_add(ch)
 				.wrapping_add(k[i]).wrapping_add(w[i]);
-			let s0 = a.rotate_right(28) ^ a.rotate_right(34) ^ a.rotate_right(39);
+			let s0 = a.rotate_right(28)
+				^ a.rotate_right(34)
+				^ a.rotate_right(39);
 			let maj = (a & b) ^ (a & c) ^ (b & c);
 			let temp2 = s0.wrapping_add(maj);
 
@@ -122,14 +126,14 @@ impl SHA512 {
 ///
 /// # Arguments
 ///
-/// * `input_length` - The length of the input length. This value is needed
-///     to determine the padding length, and to embed the length in the last
-///     8 bytes of padding.
+/// * `input_length` - The length of the input length. This value
+///     is needed to determine the padding length, and to embed the
+///     length in the last 16 bytes of padding.
 ///
 /// # Returns
 ///
-/// This function returns SHA-512 padding for the given input size. This
-/// padding has a length you can determine by calling
+/// This function returns SHA-512 padding for the given input size.
+/// This padding has a length you can determine by calling
 /// `sha512::padding_length_for_input_length`.
 ///
 /// # Example
@@ -156,19 +160,21 @@ pub fn padding_for_length(input_length: usize) -> Vec<u8> {
 	for _ in 0..(padding_length - 17) {
 		result.push(0b0000_0000);
 	}
-	result.extend_from_slice(&(input_length as u128).wrapping_mul(8).to_be_bytes());
+	result.extend_from_slice(
+		&(input_length as u128).wrapping_mul(8).to_be_bytes());
 	result
 }
 
-/// Compute the SHA-512 padding length (in bytes) for the given input length.
+/// Compute the SHA-512 padding length (in bytes) for the given
+/// input length.
 ///
 /// The result is always between 17 and 112 (inclusive).
 ///
 /// # Arguments
 ///
-/// * `input_length` - The length of the input length. This value is used
-///     because the amount of padding is always such that the total padded
-///     string is a multiple of 128 bytes.
+/// * `input_length` - The length of the input length. This value is
+///     used because the amount of padding is always such that the
+///     total padded string is a multiple of 128 bytes.
 ///
 /// # Returns
 ///
@@ -180,7 +186,8 @@ pub fn padding_for_length(input_length: usize) -> Vec<u8> {
 /// ```
 /// # use extendhash::sha512;
 /// let data = "This string will be hashed.";
-/// let padding_length = sha512::padding_length_for_input_length(data.len());
+/// let padding_length =
+///     sha512::padding_length_for_input_length(data.len());
 /// assert_eq!(data.len() + padding_length, 128);
 /// ```
 pub fn padding_length_for_input_length(input_length: usize) -> usize {
@@ -195,8 +202,8 @@ pub fn padding_length_for_input_length(input_length: usize) -> usize {
 ///
 /// # Arguments
 ///
-/// * `input` - The input data to be hashed - this could be a UTF-8 string
-///     or any other binary data.
+/// * `input` - The input data to be hashed - this could be a
+///     UTF-8 string or any other binary data.
 ///
 /// # Returns
 ///
@@ -244,14 +251,17 @@ pub fn compute_hash(input: &[u8]) -> [u8; 64] {
 /// # Arguments
 ///
 /// * `hash` - The SHA-512 hash of some previous (unknown) data
-/// * `length` - The length of the unknown data (without any added padding)
-/// * `additional_input` - Additional input to be included in the new hash.
+/// * `length` - The length of the unknown data (without any
+///       added padding)
+/// * `additional_input` - Additional input to be included
+///       in the new hash.
 ///
 /// # Returns
 ///
-/// This function returns the SHA-512 hash of the concatenation of the original
-/// unknown data, its padding, and the `additional_input`.
-/// You can see the included (intermediate) padding by calling `sha512::padding_for_length`.
+/// This function returns the SHA-512 hash of the concatenation of the
+/// original unknown data, its padding, and the `additional_input`.
+/// You can see the included (intermediate) padding by calling
+/// `sha512::padding_for_length`.
 ///
 /// # Example
 ///
@@ -261,35 +271,61 @@ pub fn compute_hash(input: &[u8]) -> [u8; 64] {
 /// let hash = sha512::compute_hash(secret_data);
 /// let secret_data_length = secret_data.len();
 /// 
-/// // Now we try computing a hash extension, assuming that `secret_data`
-/// // is not available. We only need `hash` and `secret_data_length`.
+/// // Now we try computing a hash extension, assuming that
+/// // `secret_data` is not available. We only need `hash`
+/// // and `secret_data_length`.
 /// let appended_message = "Appended message.".as_bytes();
-/// let combined_hash = sha512::extend_hash(hash, secret_data_length, appended_message);
+/// let combined_hash = sha512::extend_hash(
+///     hash, secret_data_length, appended_message);
 /// 
 /// // Now we verify that `combined_hash` matches the
 /// // concatenation (note the intermediate padding):
 /// let mut combined_data = Vec::<u8>::new();
 /// combined_data.extend_from_slice(secret_data);
-/// let intermediate_padding = sha512::padding_for_length(secret_data_length);
-/// combined_data.extend_from_slice(intermediate_padding.as_slice());
+/// let padding = sha512::padding_for_length(secret_data_length);
+/// combined_data.extend_from_slice(padding.as_slice());
 /// combined_data.extend_from_slice(appended_message);
-/// assert_eq!(&combined_hash[..], &sha512::compute_hash(combined_data.as_slice())[..]);
+/// assert_eq!(
+///     &combined_hash[..],
+///     &sha512::compute_hash(combined_data.as_slice())[..]);
 /// ```
-pub fn extend_hash(hash: [u8; 64], length: usize, additional_input: &[u8]) -> [u8; 64] {
+pub fn extend_hash(
+	hash: [u8; 64],
+	length: usize,
+	additional_input: &[u8]) -> [u8; 64] {
+
 	let mut sha512 = SHA512 {
 		h: [
-			u64::from_be_bytes([hash[ 0], hash[ 1], hash[ 2], hash[ 3], hash[ 4], hash[ 5], hash[ 6], hash[ 7]]),
-			u64::from_be_bytes([hash[ 8], hash[ 9], hash[10], hash[11], hash[12], hash[13], hash[14], hash[15]]),
-			u64::from_be_bytes([hash[16], hash[17], hash[18], hash[19], hash[20], hash[21], hash[22], hash[23]]),
-			u64::from_be_bytes([hash[24], hash[25], hash[26], hash[27], hash[28], hash[29], hash[30], hash[31]]),
-			u64::from_be_bytes([hash[32], hash[33], hash[34], hash[35], hash[36], hash[37], hash[38], hash[39]]),
-			u64::from_be_bytes([hash[40], hash[41], hash[42], hash[43], hash[44], hash[45], hash[46], hash[47]]),
-			u64::from_be_bytes([hash[48], hash[49], hash[50], hash[51], hash[52], hash[53], hash[54], hash[55]]),
-			u64::from_be_bytes([hash[56], hash[57], hash[58], hash[59], hash[60], hash[61], hash[62], hash[63]])
+			u64::from_be_bytes([
+					hash[ 0], hash[ 1], hash[ 2], hash[ 3],
+					hash[ 4], hash[ 5], hash[ 6], hash[ 7]]),
+			u64::from_be_bytes([
+					hash[ 8], hash[ 9], hash[10], hash[11],
+					hash[12], hash[13], hash[14], hash[15]]),
+			u64::from_be_bytes([
+					hash[16], hash[17], hash[18], hash[19],
+					hash[20], hash[21], hash[22], hash[23]]),
+			u64::from_be_bytes([
+					hash[24], hash[25], hash[26], hash[27],
+					hash[28], hash[29], hash[30], hash[31]]),
+			u64::from_be_bytes([
+					hash[32], hash[33], hash[34], hash[35],
+					hash[36], hash[37], hash[38], hash[39]]),
+			u64::from_be_bytes([
+					hash[40], hash[41], hash[42], hash[43],
+					hash[44], hash[45], hash[46], hash[47]]),
+			u64::from_be_bytes([
+					hash[48], hash[49], hash[50], hash[51],
+					hash[52], hash[53], hash[54], hash[55]]),
+			u64::from_be_bytes([
+					hash[56], hash[57], hash[58], hash[59],
+					hash[60], hash[61], hash[62], hash[63]])
 		]
 	};
 
-	let len = length + padding_length_for_input_length(length) + additional_input.len();
+	let len = length
+		+ padding_length_for_input_length(length)
+		+ additional_input.len();
 
 	let mut data = Vec::<u8>::new();
 	data.extend_from_slice(additional_input);
@@ -335,7 +371,8 @@ mod tests {
 
 	#[test]
 	fn quick_brown_fox_test() {
-		assert_eq!(&sha512::compute_hash("The quick brown fox jumps over the lazy dog".as_bytes())[..], &[
+		let s = "The quick brown fox jumps over the lazy dog";
+		assert_eq!(&sha512::compute_hash(s.as_bytes())[..], &[
 			0x07, 0xe5, 0x47, 0xd9, 0x58, 0x6f, 0x6a, 0x73,
 			0xf7, 0x3f, 0xba, 0xc0, 0x43, 0x5e, 0xd7, 0x69,
 			0x51, 0x21, 0x8f, 0xb7, 0xd0, 0xc8, 0xd7, 0x88,
@@ -348,7 +385,8 @@ mod tests {
 
 	#[test]
 	fn quick_brown_fox_test_2() {
-		assert_eq!(&sha512::compute_hash("The quick brown fox jumps over the lazy cog".as_bytes())[..], &[
+		let s = "The quick brown fox jumps over the lazy cog";
+		assert_eq!(&sha512::compute_hash(s.as_bytes())[..], &[
 			0x3e, 0xee, 0xe1, 0xd0, 0xe1, 0x17, 0x33, 0xef,
 			0x15, 0x2a, 0x6c, 0x29, 0x50, 0x3b, 0x3a, 0xe2,
 			0x0c, 0x4f, 0x1f, 0x3c, 0xda, 0x4c, 0xb2, 0x6f,
@@ -361,8 +399,9 @@ mod tests {
 
 	#[test]
 	fn abc_test() {
-		assert_eq!(&sha512::compute_hash(
-			"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".as_bytes())[..], &[
+		let s = "ABCDEFGHIJKLMNOPQRSTUVWXYZ\
+			abcdefghijklmnopqrstuvwxyz0123456789";
+		assert_eq!(&sha512::compute_hash(s.as_bytes())[..], &[
 			0x1e, 0x07, 0xbe, 0x23, 0xc2, 0x6a, 0x86, 0xea,
 			0x37, 0xea, 0x81, 0x0c, 0x8e, 0xc7, 0x80, 0x93,
 			0x52, 0x51, 0x5a, 0x97, 0x0e, 0x92, 0x53, 0xc2,
@@ -376,9 +415,8 @@ mod tests {
 	#[test]
 	fn long_test() {
 		let mut input = String::new();
-		for _ in 0..10000 {
-			input.push_str("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
-			input.push_str("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+		for _ in 0..40000 {
+			input.push_str("aaaaaaaaaaaaaaaaaaaaaaaaa");
 		}
 		assert_eq!(input.len(), 1_000_000);
 		assert_eq!(&sha512::compute_hash(input.as_bytes())[..], &[
@@ -405,28 +443,34 @@ mod tests {
 		assert_eq!(sha512::padding_length_for_input_length(100), 28);
 		assert_eq!(sha512::padding_length_for_input_length(101), 27);
 		assert_eq!(sha512::padding_length_for_input_length(111), 17);
-		assert_eq!(sha512::padding_length_for_input_length(112), 128 + 16);
-		assert_eq!(sha512::padding_length_for_input_length(113), 128 + 15);
-		assert_eq!(sha512::padding_length_for_input_length(126), 128 + 2);
-		assert_eq!(sha512::padding_length_for_input_length(127), 128 + 1);
+		assert_eq!(sha512::padding_length_for_input_length(112), 144);
+		assert_eq!(sha512::padding_length_for_input_length(113), 143);
+		assert_eq!(sha512::padding_length_for_input_length(126), 130);
+		assert_eq!(sha512::padding_length_for_input_length(127), 129);
 		assert_eq!(sha512::padding_length_for_input_length(128), 128);
 		assert_eq!(sha512::padding_length_for_input_length(256), 128);
-		assert_eq!(sha512::padding_length_for_input_length(128 * 100000), 128);
+		assert_eq!(
+			sha512::padding_length_for_input_length(128 * 100000),
+			128);
 	}
 
 	#[test]
 	fn test_hash_ext() {
-		let secret = "count=10&lat=37.351&user_id=1&long=-119.827&waffle=eggo".as_bytes();
+		let secret = "count=10&lat=37.351&user_id=1&\
+			long=-119.827&waffle=eggo".as_bytes();
 		let hash = sha512::compute_hash(secret);
 
 		let appended_str = "&waffle=liege".as_bytes();
-		let combined_hash = sha512::extend_hash(hash, secret.len(), appended_str);
+		let combined_hash = sha512::extend_hash(
+			hash, secret.len(), appended_str);
 
 		let mut concatenation = Vec::<u8>::new();
 		concatenation.extend_from_slice(secret);
-		let intermediate_padding = sha512::padding_for_length(secret.len());
-		concatenation.extend_from_slice(intermediate_padding.as_slice());
+		let padding = sha512::padding_for_length(secret.len());
+		concatenation.extend_from_slice(padding.as_slice());
 		concatenation.extend_from_slice(appended_str);
-		assert_eq!(&combined_hash[..], &sha512::compute_hash(concatenation.as_slice())[..]);
+		assert_eq!(
+			&combined_hash[..],
+			&sha512::compute_hash(concatenation.as_slice())[..]);
 	}
 }

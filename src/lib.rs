@@ -17,19 +17,23 @@
 //! let hash = sha256::compute_hash(secret_data);
 //! let secret_data_length = secret_data.len();
 //! 
-//! // Now we try computing a hash extension, assuming that `secret_data`
-//! // is not available. We only need `hash` and `secret_data_length`.
+//! // Now we try computing a hash extension, assuming that
+//! // `secret_data` is not available. We only need `hash` and
+//! // `secret_data_length`.
 //! let appended_message = "Appended message.".as_bytes();
-//! let combined_hash = sha256::extend_hash(hash, secret_data_length, appended_message);
+//! let combined_hash = sha256::extend_hash(
+//!     hash, secret_data_length, appended_message);
 //! 
 //! // Now we verify that `combined_hash` matches the
 //! // concatenation (note the intermediate padding):
 //! let mut combined_data = Vec::<u8>::new();
 //! combined_data.extend_from_slice(secret_data);
-//! let intermediate_padding = sha256::padding_for_length(secret_data_length);
-//! combined_data.extend_from_slice(intermediate_padding.as_slice());
+//! let padding = sha256::padding_for_length(secret_data_length);
+//! combined_data.extend_from_slice(padding.as_slice());
 //! combined_data.extend_from_slice(appended_message);
-//! assert_eq!(combined_hash, sha256::compute_hash(combined_data.as_slice()));
+//! assert_eq!(
+//!     combined_hash,
+//!     sha256::compute_hash(combined_data.as_slice()));
 //! ```
 
 #![doc(html_root_url = "https://docs.rs/extendhash/0.2.6")]
@@ -44,19 +48,23 @@
 /// let hash = md5::compute_hash(secret_data);
 /// let secret_data_length = secret_data.len();
 /// 
-/// // Now we try computing a hash extension, assuming that `secret_data`
-/// // is not available. We only need `hash` and `secret_data_length`.
+/// // Now we try computing a hash extension, assuming that
+/// // `secret_data` is not available. We only need `hash` and
+/// // `secret_data_length`.
 /// let appended_message = "Appended message.".as_bytes();
-/// let combined_hash = md5::extend_hash(hash, secret_data_length, appended_message);
+/// let combined_hash = md5::extend_hash(
+///     hash, secret_data_length, appended_message);
 /// 
 /// // Now we verify that `combined_hash` matches the
 /// // concatenation (note the intermediate padding):
 /// let mut combined_data = Vec::<u8>::new();
 /// combined_data.extend_from_slice(secret_data);
-/// let intermediate_padding = md5::padding_for_length(secret_data_length);
-/// combined_data.extend_from_slice(intermediate_padding.as_slice());
+/// let padding = md5::padding_for_length(secret_data_length);
+/// combined_data.extend_from_slice(padding.as_slice());
 /// combined_data.extend_from_slice(appended_message);
-/// assert_eq!(combined_hash, md5::compute_hash(combined_data.as_slice()));
+/// assert_eq!(
+///     combined_hash,
+///     md5::compute_hash(combined_data.as_slice()));
 /// ```
 pub mod md5;
 
@@ -73,19 +81,23 @@ pub(crate) mod sha01;
 /// let hash = sha0::compute_hash(secret_data);
 /// let secret_data_length = secret_data.len();
 /// 
-/// // Now we try computing a hash extension, assuming that `secret_data`
-/// // is not available. We only need `hash` and `secret_data_length`.
+/// // Now we try computing a hash extension, assuming that
+/// // `secret_data` is not available. We only need `hash` and
+/// // `secret_data_length`.
 /// let appended_message = "Appended message.".as_bytes();
-/// let combined_hash = sha0::extend_hash(hash, secret_data_length, appended_message);
+/// let combined_hash = sha0::extend_hash(
+///     hash, secret_data_length, appended_message);
 /// 
 /// // Now we verify that `combined_hash` matches the
 /// // concatenation (note the intermediate padding):
 /// let mut combined_data = Vec::<u8>::new();
 /// combined_data.extend_from_slice(secret_data);
-/// let intermediate_padding = sha0::padding_for_length(secret_data_length);
-/// combined_data.extend_from_slice(intermediate_padding.as_slice());
+/// let padding = sha0::padding_for_length(secret_data_length);
+/// combined_data.extend_from_slice(padding.as_slice());
 /// combined_data.extend_from_slice(appended_message);
-/// assert_eq!(combined_hash, sha0::compute_hash(combined_data.as_slice()));
+/// assert_eq!(
+///     combined_hash,
+///     sha0::compute_hash(combined_data.as_slice()));
 /// ```
 pub mod sha0;
 
@@ -99,19 +111,23 @@ pub mod sha0;
 /// let hash = sha1::compute_hash(secret_data);
 /// let secret_data_length = secret_data.len();
 /// 
-/// // Now we try computing a hash extension, assuming that `secret_data`
-/// // is not available. We only need `hash` and `secret_data_length`.
+/// // Now we try computing a hash extension, assuming that
+/// // `secret_data` is not available. We only need `hash` and
+/// // `secret_data_length`.
 /// let appended_message = "Appended message.".as_bytes();
-/// let combined_hash = sha1::extend_hash(hash, secret_data_length, appended_message);
+/// let combined_hash = sha1::extend_hash(
+///     hash, secret_data_length, appended_message);
 /// 
 /// // Now we verify that `combined_hash` matches the
 /// // concatenation (note the intermediate padding):
 /// let mut combined_data = Vec::<u8>::new();
 /// combined_data.extend_from_slice(secret_data);
-/// let intermediate_padding = sha1::padding_for_length(secret_data_length);
-/// combined_data.extend_from_slice(intermediate_padding.as_slice());
+/// let padding = sha1::padding_for_length(secret_data_length);
+/// combined_data.extend_from_slice(padding.as_slice());
 /// combined_data.extend_from_slice(appended_message);
-/// assert_eq!(combined_hash, sha1::compute_hash(combined_data.as_slice()));
+/// assert_eq!(
+///     combined_hash,
+///     sha1::compute_hash(combined_data.as_slice()));
 /// ```
 pub mod sha1;
 
@@ -125,19 +141,23 @@ pub mod sha1;
 /// let hash = sha256::compute_hash(secret_data);
 /// let secret_data_length = secret_data.len();
 /// 
-/// // Now we try computing a hash extension, assuming that `secret_data`
-/// // is not available. We only need `hash` and `secret_data_length`.
+/// // Now we try computing a hash extension, assuming that
+/// // `secret_data` is not available. We only need `hash` and
+/// // `secret_data_length`.
 /// let appended_message = "Appended message.".as_bytes();
-/// let combined_hash = sha256::extend_hash(hash, secret_data_length, appended_message);
+/// let combined_hash = sha256::extend_hash(
+///     hash, secret_data_length, appended_message);
 /// 
 /// // Now we verify that `combined_hash` matches the
 /// // concatenation (note the intermediate padding):
 /// let mut combined_data = Vec::<u8>::new();
 /// combined_data.extend_from_slice(secret_data);
-/// let intermediate_padding = sha256::padding_for_length(secret_data_length);
-/// combined_data.extend_from_slice(intermediate_padding.as_slice());
+/// let padding = sha256::padding_for_length(secret_data_length);
+/// combined_data.extend_from_slice(padding.as_slice());
 /// combined_data.extend_from_slice(appended_message);
-/// assert_eq!(combined_hash, sha256::compute_hash(combined_data.as_slice()));
+/// assert_eq!(
+///     combined_hash,
+///     sha256::compute_hash(combined_data.as_slice()));
 /// ```
 pub mod sha256;
 
@@ -151,18 +171,22 @@ pub mod sha256;
 /// let hash = sha512::compute_hash(secret_data);
 /// let secret_data_length = secret_data.len();
 /// 
-/// // Now we try computing a hash extension, assuming that `secret_data`
-/// // is not available. We only need `hash` and `secret_data_length`.
+/// // Now we try computing a hash extension, assuming that
+/// // `secret_data` is not available. We only need `hash` and
+/// // `secret_data_length`.
 /// let appended_message = "Appended message.".as_bytes();
-/// let combined_hash = sha512::extend_hash(hash, secret_data_length, appended_message);
+/// let combined_hash = sha512::extend_hash(
+///     hash, secret_data_length, appended_message);
 /// 
 /// // Now we verify that `combined_hash` matches the
 /// // concatenation (note the intermediate padding):
 /// let mut combined_data = Vec::<u8>::new();
 /// combined_data.extend_from_slice(secret_data);
-/// let intermediate_padding = sha512::padding_for_length(secret_data_length);
-/// combined_data.extend_from_slice(intermediate_padding.as_slice());
+/// let padding = sha512::padding_for_length(secret_data_length);
+/// combined_data.extend_from_slice(padding.as_slice());
 /// combined_data.extend_from_slice(appended_message);
-/// assert_eq!(&combined_hash[..], &sha512::compute_hash(combined_data.as_slice())[..]);
+/// assert_eq!(
+///     &combined_hash[..],
+///     &sha512::compute_hash(combined_data.as_slice())[..]);
 /// ```
 pub mod sha512;
