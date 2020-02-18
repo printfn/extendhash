@@ -72,14 +72,14 @@ impl MD5 {
     }
 
     fn hash_from_data(&self) -> [u8; 16] {
-        let mut result = Vec::<u8>::new();
-        result.extend_from_slice(&self.a0.to_le_bytes());
-        result.extend_from_slice(&self.b0.to_le_bytes());
-        result.extend_from_slice(&self.c0.to_le_bytes());
-        result.extend_from_slice(&self.d0.to_le_bytes());
-        let mut res = [0; 16];
-        res.copy_from_slice(result.as_slice());
-        res
+        let a = self.a0.to_le_bytes();
+        let b = self.b0.to_le_bytes();
+        let c = self.c0.to_le_bytes();
+        let d = self.d0.to_le_bytes();
+        [
+            a[0], a[1], a[2], a[3], b[0], b[1], b[2], b[3], c[0], c[1],
+            c[2], c[3], d[0], d[1], d[2], d[3],
+        ]
     }
 }
 

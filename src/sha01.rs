@@ -75,15 +75,15 @@ impl SHA1 {
     }
 
     fn hash_from_data(&self) -> [u8; 20] {
-        let mut result = Vec::<u8>::new();
-        result.extend_from_slice(&self.h0.to_be_bytes());
-        result.extend_from_slice(&self.h1.to_be_bytes());
-        result.extend_from_slice(&self.h2.to_be_bytes());
-        result.extend_from_slice(&self.h3.to_be_bytes());
-        result.extend_from_slice(&self.h4.to_be_bytes());
-        let mut res = [0; 20];
-        res.copy_from_slice(result.as_slice());
-        res
+        let a = self.h0.to_be_bytes();
+        let b = self.h1.to_be_bytes();
+        let c = self.h2.to_be_bytes();
+        let d = self.h3.to_be_bytes();
+        let e = self.h4.to_be_bytes();
+        [
+            a[0], a[1], a[2], a[3], b[0], b[1], b[2], b[3], c[0], c[1],
+            c[2], c[3], d[0], d[1], d[2], d[3], e[0], e[1], e[2], e[3],
+        ]
     }
 }
 

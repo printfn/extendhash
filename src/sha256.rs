@@ -92,18 +92,20 @@ impl SHA256 {
     }
 
     fn hash_from_data(&self) -> [u8; 32] {
-        let mut result = Vec::<u8>::new();
-        result.extend_from_slice(&self.h[0].to_be_bytes());
-        result.extend_from_slice(&self.h[1].to_be_bytes());
-        result.extend_from_slice(&self.h[2].to_be_bytes());
-        result.extend_from_slice(&self.h[3].to_be_bytes());
-        result.extend_from_slice(&self.h[4].to_be_bytes());
-        result.extend_from_slice(&self.h[5].to_be_bytes());
-        result.extend_from_slice(&self.h[6].to_be_bytes());
-        result.extend_from_slice(&self.h[7].to_be_bytes());
-        let mut res = [0; 32];
-        res.copy_from_slice(result.as_slice());
-        res
+        let a = self.h[0].to_be_bytes();
+        let b = self.h[1].to_be_bytes();
+        let c = self.h[2].to_be_bytes();
+        let d = self.h[3].to_be_bytes();
+        let e = self.h[4].to_be_bytes();
+        let f = self.h[5].to_be_bytes();
+        let g = self.h[6].to_be_bytes();
+        let h = self.h[7].to_be_bytes();
+        [
+            a[0], a[1], a[2], a[3], b[0], b[1], b[2], b[3], c[0], c[1],
+            c[2], c[3], d[0], d[1], d[2], d[3], e[0], e[1], e[2], e[3],
+            f[0], f[1], f[2], f[3], g[0], g[1], g[2], g[3], h[0], h[1],
+            h[2], h[3],
+        ]
     }
 }
 
