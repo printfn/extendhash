@@ -37,6 +37,8 @@
 //! ```
 
 #![doc(html_root_url = "https://docs.rs/extendhash/1.0.1")]
+// This crate optionally supports no_std via the "std" feature
+#![cfg_attr(not(feature = "std"), no_std)]
 
 /// Compute MD5 hashes and hash extensions.
 ///
@@ -70,6 +72,9 @@ pub mod md5;
 
 /// Shared code for SHA-0 and SHA-1.
 pub(crate) mod sha01;
+
+/// Helper code for working with chunks and iterators
+pub(crate) mod chunks;
 
 /// Compute SHA-0 hashes and hash extensions.
 ///
