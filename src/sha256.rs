@@ -390,13 +390,8 @@ mod tests {
 
     #[test]
     fn long_test() {
-        let mut input = String::new();
-        for _ in 0..40000 {
-            input.push_str("aaaaaaaaaaaaaaaaaaaaaaaaa");
-        }
-        assert_eq!(input.len(), 1_000_000);
         assert_eq!(
-            sha256::compute_hash(input.as_bytes()),
+            sha256::compute_hash(&[b'a'; 1_000_000]),
             [
                 0xcd, 0xc7, 0x6e, 0x5c, 0x99, 0x14, 0xfb, 0x92, 0x81,
                 0xa1, 0xc7, 0xe2, 0x84, 0xd7, 0x3e, 0x67, 0xf1, 0x80,

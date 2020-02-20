@@ -508,13 +508,8 @@ mod tests {
 
     #[test]
     fn long_test() {
-        let mut input = String::new();
-        for _ in 0..40000 {
-            input.push_str("aaaaaaaaaaaaaaaaaaaaaaaaa");
-        }
-        assert_eq!(input.len(), 1_000_000);
         assert_eq!(
-            &sha512::compute_hash(input.as_bytes())[..],
+            &sha512::compute_hash(&[b'a'; 1_000_000])[..],
             &[
                 0xe7, 0x18, 0x48, 0x3d, 0x0c, 0xe7, 0x69, 0x64, 0x4e,
                 0x2e, 0x42, 0xc7, 0xbc, 0x15, 0xb4, 0x63, 0x8e, 0x1f,

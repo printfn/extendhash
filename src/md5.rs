@@ -338,13 +338,8 @@ mod tests {
 
     #[test]
     fn long_test() {
-        let mut input = String::new();
-        for _ in 0..40000 {
-            input.push_str("aaaaaaaaaaaaaaaaaaaaaaaaa");
-        }
-        assert_eq!(input.len(), 1_000_000);
         assert_eq!(
-            md5::compute_hash(input.as_bytes()),
+            md5::compute_hash(&[b'a'; 1_000_000]),
             [
                 0x77, 0x07, 0xd6, 0xae, 0x4e, 0x02, 0x7c, 0x70, 0xee,
                 0xa2, 0xa9, 0x35, 0xc2, 0x29, 0x6f, 0x21
