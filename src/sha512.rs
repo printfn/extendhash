@@ -91,15 +91,6 @@ impl SHA512 {
     fn apply_chunk(&mut self, chunk: &[u8]) {
         assert_eq!(chunk.len(), 128);
 
-        let mut a: u64 = self.h[0];
-        let mut b: u64 = self.h[1];
-        let mut c: u64 = self.h[2];
-        let mut d: u64 = self.h[3];
-        let mut e: u64 = self.h[4];
-        let mut f: u64 = self.h[5];
-        let mut g: u64 = self.h[6];
-        let mut h: u64 = self.h[7];
-
         let mut w = [0u64; 80];
         for i in 0..80 {
             if i < 16 {
@@ -123,53 +114,55 @@ impl SHA512 {
             }
         }
 
+        let mut h = self.h;
+
         for i in 0..80 {
-            let s1 = e.rotate_right(14) ^ e.rotate_right(18) ^ e.rotate_right(41);
-            let ch = (e & f) ^ ((!e) & g);
-            let temp1 = h
+            let s1 = h[4].rotate_right(14) ^ h[4].rotate_right(18) ^ h[4].rotate_right(41);
+            let ch = (h[4] & h[5]) ^ ((!h[4]) & h[6]);
+            let temp1 = h[7]
                 .wrapping_add(s1)
                 .wrapping_add(ch)
                 .wrapping_add(Self::K[i])
                 .wrapping_add(w[i]);
-            let s0 = a.rotate_right(28) ^ a.rotate_right(34) ^ a.rotate_right(39);
-            let maj = (a & b) ^ (a & c) ^ (b & c);
+            let s0 = h[0].rotate_right(28) ^ h[0].rotate_right(34) ^ h[0].rotate_right(39);
+            let maj = (h[0] & h[1]) ^ (h[0] & h[2]) ^ (h[1] & h[2]);
             let temp2 = s0.wrapping_add(maj);
 
-            h = g;
-            g = f;
-            f = e;
-            e = d.wrapping_add(temp1);
-            d = c;
-            c = b;
-            b = a;
-            a = temp1.wrapping_add(temp2);
+            h[7] = h[6];
+            h[6] = h[5];
+            h[5] = h[4];
+            h[4] = h[3].wrapping_add(temp1);
+            h[3] = h[2];
+            h[2] = h[1];
+            h[1] = h[0];
+            h[0] = temp1.wrapping_add(temp2);
         }
 
-        self.h[0] = self.h[0].wrapping_add(a);
-        self.h[1] = self.h[1].wrapping_add(b);
-        self.h[2] = self.h[2].wrapping_add(c);
-        self.h[3] = self.h[3].wrapping_add(d);
-        self.h[4] = self.h[4].wrapping_add(e);
-        self.h[5] = self.h[5].wrapping_add(f);
-        self.h[6] = self.h[6].wrapping_add(g);
-        self.h[7] = self.h[7].wrapping_add(h);
+        for (i, &val) in h.iter().enumerate() {
+            self.h[i] = self.h[i].wrapping_add(val);
+        }
     }
 
     fn hash_from_data(&self) -> [u8; 64] {
-        let a = self.h[0].to_be_bytes();
-        let b = self.h[1].to_be_bytes();
-        let c = self.h[2].to_be_bytes();
-        let d = self.h[3].to_be_bytes();
-        let e = self.h[4].to_be_bytes();
-        let f = self.h[5].to_be_bytes();
-        let g = self.h[6].to_be_bytes();
-        let h = self.h[7].to_be_bytes();
+        let h = [
+            self.h[0].to_be_bytes(),
+            self.h[1].to_be_bytes(),
+            self.h[2].to_be_bytes(),
+            self.h[3].to_be_bytes(),
+            self.h[4].to_be_bytes(),
+            self.h[5].to_be_bytes(),
+            self.h[6].to_be_bytes(),
+            self.h[7].to_be_bytes(),
+        ];
         [
-            a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], b[0], b[1], b[2], b[3], b[4], b[5],
-            b[6], b[7], c[0], c[1], c[2], c[3], c[4], c[5], c[6], c[7], d[0], d[1], d[2], d[3],
-            d[4], d[5], d[6], d[7], e[0], e[1], e[2], e[3], e[4], e[5], e[6], e[7], f[0], f[1],
-            f[2], f[3], f[4], f[5], f[6], f[7], g[0], g[1], g[2], g[3], g[4], g[5], g[6], g[7],
-            h[0], h[1], h[2], h[3], h[4], h[5], h[6], h[7],
+            h[0][0], h[0][1], h[0][2], h[0][3], h[0][4], h[0][5], h[0][6], h[0][7], h[1][0],
+            h[1][1], h[1][2], h[1][3], h[1][4], h[1][5], h[1][6], h[1][7], h[2][0], h[2][1],
+            h[2][2], h[2][3], h[2][4], h[2][5], h[2][6], h[2][7], h[3][0], h[3][1], h[3][2],
+            h[3][3], h[3][4], h[3][5], h[3][6], h[3][7], h[4][0], h[4][1], h[4][2], h[4][3],
+            h[4][4], h[4][5], h[4][6], h[4][7], h[5][0], h[5][1], h[5][2], h[5][3], h[5][4],
+            h[5][5], h[5][6], h[5][7], h[6][0], h[6][1], h[6][2], h[6][3], h[6][4], h[6][5],
+            h[6][6], h[6][7], h[7][0], h[7][1], h[7][2], h[7][3], h[7][4], h[7][5], h[7][6],
+            h[7][7],
         ]
     }
 }

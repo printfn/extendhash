@@ -3,116 +3,109 @@ use core::iter;
 
 #[derive(Clone)]
 struct MD5 {
-    a0: u32,
-    b0: u32,
-    c0: u32,
-    d0: u32,
+    h: [u32; 4],
 }
 
 impl MD5 {
     fn new() -> MD5 {
         MD5 {
-            a0: 0x6745_2301,
-            b0: 0xefcd_ab89,
-            c0: 0x98ba_dcfe,
-            d0: 0x1032_5476,
+            h: [0x6745_2301, 0xefcd_ab89, 0x98ba_dcfe, 0x1032_5476],
         }
     }
 
     fn from_hash(hash: [u8; 16]) -> MD5 {
         MD5 {
-            a0: u32::from_le_bytes([hash[0], hash[1], hash[2], hash[3]]),
-            b0: u32::from_le_bytes([hash[4], hash[5], hash[6], hash[7]]),
-            c0: u32::from_le_bytes([hash[8], hash[9], hash[10], hash[11]]),
-            d0: u32::from_le_bytes([hash[12], hash[13], hash[14], hash[15]]),
+            h: [
+                u32::from_le_bytes([hash[0], hash[1], hash[2], hash[3]]),
+                u32::from_le_bytes([hash[4], hash[5], hash[6], hash[7]]),
+                u32::from_le_bytes([hash[8], hash[9], hash[10], hash[11]]),
+                u32::from_le_bytes([hash[12], hash[13], hash[14], hash[15]]),
+            ],
         }
     }
 
+    const S: [u32; 64] = [
+        7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22, 5, 9, 14, 20, 5, 9, 14, 20, 5,
+        9, 14, 20, 5, 9, 14, 20, 4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23, 6, 10,
+        15, 21, 6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21,
+    ];
+
+    const K: [u32; 64] = [
+        0xd76a_a478,
+        0xe8c7_b756,
+        0x2420_70db,
+        0xc1bd_ceee,
+        0xf57c_0faf,
+        0x4787_c62a,
+        0xa830_4613,
+        0xfd46_9501,
+        0x6980_98d8,
+        0x8b44_f7af,
+        0xffff_5bb1,
+        0x895c_d7be,
+        0x6b90_1122,
+        0xfd98_7193,
+        0xa679_438e,
+        0x49b4_0821,
+        0xf61e_2562,
+        0xc040_b340,
+        0x265e_5a51,
+        0xe9b6_c7aa,
+        0xd62f_105d,
+        0x0244_1453,
+        0xd8a1_e681,
+        0xe7d3_fbc8,
+        0x21e1_cde6,
+        0xc337_07d6,
+        0xf4d5_0d87,
+        0x455a_14ed,
+        0xa9e3_e905,
+        0xfcef_a3f8,
+        0x676f_02d9,
+        0x8d2a_4c8a,
+        0xfffa_3942,
+        0x8771_f681,
+        0x6d9d_6122,
+        0xfde5_380c,
+        0xa4be_ea44,
+        0x4bde_cfa9,
+        0xf6bb_4b60,
+        0xbebf_bc70,
+        0x289b_7ec6,
+        0xeaa1_27fa,
+        0xd4ef_3085,
+        0x0488_1d05,
+        0xd9d4_d039,
+        0xe6db_99e5,
+        0x1fa2_7cf8,
+        0xc4ac_5665,
+        0xf429_2244,
+        0x432a_ff97,
+        0xab94_23a7,
+        0xfc93_a039,
+        0x655b_59c3,
+        0x8f0c_cc92,
+        0xffef_f47d,
+        0x8584_5dd1,
+        0x6fa8_7e4f,
+        0xfe2c_e6e0,
+        0xa301_4314,
+        0x4e08_11a1,
+        0xf753_7e82,
+        0xbd3a_f235,
+        0x2ad7_d2bb,
+        0xeb86_d391,
+    ];
+
     fn apply_chunk(self, chunk: [u8; 64]) -> MD5 {
-        let s: [u32; 64] = [
-            7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22, 5, 9, 14, 20, 5, 9, 14, 20,
-            5, 9, 14, 20, 5, 9, 14, 20, 4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23,
-            6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21,
-        ];
-
-        let k: [u32; 64] = [
-            0xd76a_a478,
-            0xe8c7_b756,
-            0x2420_70db,
-            0xc1bd_ceee,
-            0xf57c_0faf,
-            0x4787_c62a,
-            0xa830_4613,
-            0xfd46_9501,
-            0x6980_98d8,
-            0x8b44_f7af,
-            0xffff_5bb1,
-            0x895c_d7be,
-            0x6b90_1122,
-            0xfd98_7193,
-            0xa679_438e,
-            0x49b4_0821,
-            0xf61e_2562,
-            0xc040_b340,
-            0x265e_5a51,
-            0xe9b6_c7aa,
-            0xd62f_105d,
-            0x0244_1453,
-            0xd8a1_e681,
-            0xe7d3_fbc8,
-            0x21e1_cde6,
-            0xc337_07d6,
-            0xf4d5_0d87,
-            0x455a_14ed,
-            0xa9e3_e905,
-            0xfcef_a3f8,
-            0x676f_02d9,
-            0x8d2a_4c8a,
-            0xfffa_3942,
-            0x8771_f681,
-            0x6d9d_6122,
-            0xfde5_380c,
-            0xa4be_ea44,
-            0x4bde_cfa9,
-            0xf6bb_4b60,
-            0xbebf_bc70,
-            0x289b_7ec6,
-            0xeaa1_27fa,
-            0xd4ef_3085,
-            0x0488_1d05,
-            0xd9d4_d039,
-            0xe6db_99e5,
-            0x1fa2_7cf8,
-            0xc4ac_5665,
-            0xf429_2244,
-            0x432a_ff97,
-            0xab94_23a7,
-            0xfc93_a039,
-            0x655b_59c3,
-            0x8f0c_cc92,
-            0xffef_f47d,
-            0x8584_5dd1,
-            0x6fa8_7e4f,
-            0xfe2c_e6e0,
-            0xa301_4314,
-            0x4e08_11a1,
-            0xf753_7e82,
-            0xbd3a_f235,
-            0x2ad7_d2bb,
-            0xeb86_d391,
-        ];
-
-        let mut a: u32 = self.a0;
-        let mut b: u32 = self.b0;
-        let mut c: u32 = self.c0;
-        let mut d: u32 = self.d0;
+        let mut h = self.h;
 
         for i in 0..64 {
             let (mut f, g) = match i {
-                0..=15 => ((b & c) | ((!b) & d), i),
-                16..=31 => ((d & b) | ((!d) & c), (5 * i + 1) % 16),
-                32..=47 => (b ^ c ^ d, (3 * i + 5) % 16),
-                48..=63 => (c ^ (b | (!d)), (7 * i) % 16),
+                0..=15 => ((h[1] & h[2]) | ((!h[1]) & h[3]), i),
+                16..=31 => ((h[3] & h[1]) | ((!h[3]) & h[2]), (5 * i + 1) % 16),
+                32..=47 => (h[1] ^ h[2] ^ h[3], (3 * i + 5) % 16),
+                48..=63 => (h[2] ^ (h[1] | (!h[3])), (7 * i) % 16),
                 _ => unreachable!(),
             };
 
@@ -124,29 +117,31 @@ impl MD5 {
             ];
 
             f = f
-                .wrapping_add(a)
-                .wrapping_add(k[i as usize])
+                .wrapping_add(h[0])
+                .wrapping_add(Self::K[i as usize])
                 .wrapping_add(u32::from_le_bytes(slice));
 
-            a = d;
-            d = c;
-            c = b;
-            b = b.wrapping_add(f.rotate_left(s[i as usize]));
+            h[0] = h[3];
+            h[3] = h[2];
+            h[2] = h[1];
+            h[1] = h[1].wrapping_add(f.rotate_left(Self::S[i as usize]));
         }
 
         MD5 {
-            a0: self.a0.wrapping_add(a),
-            b0: self.b0.wrapping_add(b),
-            c0: self.c0.wrapping_add(c),
-            d0: self.d0.wrapping_add(d),
+            h: [
+                self.h[0].wrapping_add(h[0]),
+                self.h[1].wrapping_add(h[1]),
+                self.h[2].wrapping_add(h[2]),
+                self.h[3].wrapping_add(h[3]),
+            ],
         }
     }
 
     fn hash_from_data(&self) -> [u8; 16] {
-        let a = self.a0.to_le_bytes();
-        let b = self.b0.to_le_bytes();
-        let c = self.c0.to_le_bytes();
-        let d = self.d0.to_le_bytes();
+        let a = self.h[0].to_le_bytes();
+        let b = self.h[1].to_le_bytes();
+        let c = self.h[2].to_le_bytes();
+        let d = self.h[3].to_le_bytes();
         [
             a[0], a[1], a[2], a[3], b[0], b[1], b[2], b[3], c[0], c[1], c[2], c[3], d[0], d[1],
             d[2], d[3],

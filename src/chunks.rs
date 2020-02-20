@@ -17,8 +17,8 @@ where
             Some(item) => item,
             None => return None,
         }; 64];
-        for i in 1..64 {
-            next_item[i] = match self.base_iterator.next() {
+        for val in next_item.iter_mut().skip(1) {
+            *val = match self.base_iterator.next() {
                 Some(item) => item,
                 None => return None,
             }

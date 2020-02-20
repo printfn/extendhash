@@ -5,84 +5,75 @@ struct SHA256 {
 
 #[cfg(feature = "std")]
 impl SHA256 {
+    const K: [u32; 64] = [
+        0x428a_2f98,
+        0x7137_4491,
+        0xb5c0_fbcf,
+        0xe9b5_dba5,
+        0x3956_c25b,
+        0x59f1_11f1,
+        0x923f_82a4,
+        0xab1c_5ed5,
+        0xd807_aa98,
+        0x1283_5b01,
+        0x2431_85be,
+        0x550c_7dc3,
+        0x72be_5d74,
+        0x80de_b1fe,
+        0x9bdc_06a7,
+        0xc19b_f174,
+        0xe49b_69c1,
+        0xefbe_4786,
+        0x0fc1_9dc6,
+        0x240c_a1cc,
+        0x2de9_2c6f,
+        0x4a74_84aa,
+        0x5cb0_a9dc,
+        0x76f9_88da,
+        0x983e_5152,
+        0xa831_c66d,
+        0xb003_27c8,
+        0xbf59_7fc7,
+        0xc6e0_0bf3,
+        0xd5a7_9147,
+        0x06ca_6351,
+        0x1429_2967,
+        0x27b7_0a85,
+        0x2e1b_2138,
+        0x4d2c_6dfc,
+        0x5338_0d13,
+        0x650a_7354,
+        0x766a_0abb,
+        0x81c2_c92e,
+        0x9272_2c85,
+        0xa2bf_e8a1,
+        0xa81a_664b,
+        0xc24b_8b70,
+        0xc76c_51a3,
+        0xd192_e819,
+        0xd699_0624,
+        0xf40e_3585,
+        0x106a_a070,
+        0x19a4_c116,
+        0x1e37_6c08,
+        0x2748_774c,
+        0x34b0_bcb5,
+        0x391c_0cb3,
+        0x4ed8_aa4a,
+        0x5b9c_ca4f,
+        0x682e_6ff3,
+        0x748f_82ee,
+        0x78a5_636f,
+        0x84c8_7814,
+        0x8cc7_0208,
+        0x90be_fffa,
+        0xa450_6ceb,
+        0xbef9_a3f7,
+        0xc671_78f2,
+    ];
+
     fn apply_chunk(&mut self, chunk: &[u8]) {
         assert_eq!(chunk.len(), 64);
-
-        let k: [u32; 64] = [
-            0x428a_2f98,
-            0x7137_4491,
-            0xb5c0_fbcf,
-            0xe9b5_dba5,
-            0x3956_c25b,
-            0x59f1_11f1,
-            0x923f_82a4,
-            0xab1c_5ed5,
-            0xd807_aa98,
-            0x1283_5b01,
-            0x2431_85be,
-            0x550c_7dc3,
-            0x72be_5d74,
-            0x80de_b1fe,
-            0x9bdc_06a7,
-            0xc19b_f174,
-            0xe49b_69c1,
-            0xefbe_4786,
-            0x0fc1_9dc6,
-            0x240c_a1cc,
-            0x2de9_2c6f,
-            0x4a74_84aa,
-            0x5cb0_a9dc,
-            0x76f9_88da,
-            0x983e_5152,
-            0xa831_c66d,
-            0xb003_27c8,
-            0xbf59_7fc7,
-            0xc6e0_0bf3,
-            0xd5a7_9147,
-            0x06ca_6351,
-            0x1429_2967,
-            0x27b7_0a85,
-            0x2e1b_2138,
-            0x4d2c_6dfc,
-            0x5338_0d13,
-            0x650a_7354,
-            0x766a_0abb,
-            0x81c2_c92e,
-            0x9272_2c85,
-            0xa2bf_e8a1,
-            0xa81a_664b,
-            0xc24b_8b70,
-            0xc76c_51a3,
-            0xd192_e819,
-            0xd699_0624,
-            0xf40e_3585,
-            0x106a_a070,
-            0x19a4_c116,
-            0x1e37_6c08,
-            0x2748_774c,
-            0x34b0_bcb5,
-            0x391c_0cb3,
-            0x4ed8_aa4a,
-            0x5b9c_ca4f,
-            0x682e_6ff3,
-            0x748f_82ee,
-            0x78a5_636f,
-            0x84c8_7814,
-            0x8cc7_0208,
-            0x90be_fffa,
-            0xa450_6ceb,
-            0xbef9_a3f7,
-            0xc671_78f2,
-        ];
-
-        let mut a: u32 = self.h[0];
-        let mut b: u32 = self.h[1];
-        let mut c: u32 = self.h[2];
-        let mut d: u32 = self.h[3];
-        let mut e: u32 = self.h[4];
-        let mut f: u32 = self.h[5];
-        let mut g: u32 = self.h[6];
-        let mut h: u32 = self.h[7];
 
         let mut w = [0u32; 64];
         for i in 0..64 {
@@ -103,51 +94,51 @@ impl SHA256 {
             }
         }
 
+        let mut h = self.h;
+
         for i in 0..64 {
-            let s1 = e.rotate_right(6) ^ e.rotate_right(11) ^ e.rotate_right(25);
-            let ch = (e & f) ^ ((!e) & g);
-            let temp1 = h
+            let s1 = h[4].rotate_right(6) ^ h[4].rotate_right(11) ^ h[4].rotate_right(25);
+            let ch = (h[4] & h[5]) ^ ((!h[4]) & h[6]);
+            let temp1 = h[7]
                 .wrapping_add(s1)
                 .wrapping_add(ch)
-                .wrapping_add(k[i])
+                .wrapping_add(Self::K[i])
                 .wrapping_add(w[i]);
-            let s0 = a.rotate_right(2) ^ a.rotate_right(13) ^ a.rotate_right(22);
-            let maj = (a & b) ^ (a & c) ^ (b & c);
+            let s0 = h[0].rotate_right(2) ^ h[0].rotate_right(13) ^ h[0].rotate_right(22);
+            let maj = (h[0] & h[1]) ^ (h[0] & h[2]) ^ (h[1] & h[2]);
             let temp2 = s0.wrapping_add(maj);
 
-            h = g;
-            g = f;
-            f = e;
-            e = d.wrapping_add(temp1);
-            d = c;
-            c = b;
-            b = a;
-            a = temp1.wrapping_add(temp2);
+            h[7] = h[6];
+            h[6] = h[5];
+            h[5] = h[4];
+            h[4] = h[3].wrapping_add(temp1);
+            h[3] = h[2];
+            h[2] = h[1];
+            h[1] = h[0];
+            h[0] = temp1.wrapping_add(temp2);
         }
 
-        self.h[0] = self.h[0].wrapping_add(a);
-        self.h[1] = self.h[1].wrapping_add(b);
-        self.h[2] = self.h[2].wrapping_add(c);
-        self.h[3] = self.h[3].wrapping_add(d);
-        self.h[4] = self.h[4].wrapping_add(e);
-        self.h[5] = self.h[5].wrapping_add(f);
-        self.h[6] = self.h[6].wrapping_add(g);
-        self.h[7] = self.h[7].wrapping_add(h);
+        for (i, &val) in h.iter().enumerate() {
+            self.h[i] = self.h[i].wrapping_add(val);
+        }
     }
 
     fn hash_from_data(&self) -> [u8; 32] {
-        let a = self.h[0].to_be_bytes();
-        let b = self.h[1].to_be_bytes();
-        let c = self.h[2].to_be_bytes();
-        let d = self.h[3].to_be_bytes();
-        let e = self.h[4].to_be_bytes();
-        let f = self.h[5].to_be_bytes();
-        let g = self.h[6].to_be_bytes();
-        let h = self.h[7].to_be_bytes();
+        let h = [
+            self.h[0].to_be_bytes(),
+            self.h[1].to_be_bytes(),
+            self.h[2].to_be_bytes(),
+            self.h[3].to_be_bytes(),
+            self.h[4].to_be_bytes(),
+            self.h[5].to_be_bytes(),
+            self.h[6].to_be_bytes(),
+            self.h[7].to_be_bytes(),
+        ];
         [
-            a[0], a[1], a[2], a[3], b[0], b[1], b[2], b[3], c[0], c[1], c[2], c[3], d[0], d[1],
-            d[2], d[3], e[0], e[1], e[2], e[3], f[0], f[1], f[2], f[3], g[0], g[1], g[2], g[3],
-            h[0], h[1], h[2], h[3],
+            h[0][0], h[0][1], h[0][2], h[0][3], h[1][0], h[1][1], h[1][2], h[1][3], h[2][0],
+            h[2][1], h[2][2], h[2][3], h[3][0], h[3][1], h[3][2], h[3][3], h[4][0], h[4][1],
+            h[4][2], h[4][3], h[5][0], h[5][1], h[5][2], h[5][3], h[6][0], h[6][1], h[6][2],
+            h[6][3], h[7][0], h[7][1], h[7][2], h[7][3],
         ]
     }
 }
