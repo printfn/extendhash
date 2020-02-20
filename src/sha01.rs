@@ -31,7 +31,7 @@ impl SHA1 {
         for i in 0..80 {
             if i < 16 {
                 w[i] = u32::from_be_bytes([
-                    chunk[4 * i + 0],
+                    chunk[4 * i],
                     chunk[4 * i + 1],
                     chunk[4 * i + 2],
                     chunk[4 * i + 3],
@@ -47,10 +47,10 @@ impl SHA1 {
 
         for i in 0..80 {
             let (f, k) = match i {
-                0..=19 => ((b & c) | ((!b) & d), 0x5a827999),
-                20..=39 => (b ^ c ^ d, 0x6ed9eba1),
-                40..=59 => ((b & c) | (b & d) | (c & d), 0x8f1bbcdc),
-                60..=79 => (b ^ c ^ d, 0xca62c1d6),
+                0..=19 => ((b & c) | ((!b) & d), 0x5a82_7999),
+                20..=39 => (b ^ c ^ d, 0x6ed9_eba1),
+                40..=59 => ((b & c) | (b & d) | (c & d), 0x8f1b_bcdc),
+                60..=79 => (b ^ c ^ d, 0xca62_c1d6),
                 _ => unreachable!(),
             };
 
@@ -149,11 +149,11 @@ pub fn padding_length_for_input_length(input_length: usize) -> usize {
 #[cfg(feature = "std")]
 pub fn compute_hash(input: &[u8], hash_type: HashType) -> [u8; 20] {
     let mut sha1 = SHA1 {
-        h0: 0x67452301,
-        h1: 0xefcdab89,
-        h2: 0x98badcfe,
-        h3: 0x10325476,
-        h4: 0xc3d2e1f0,
+        h0: 0x6745_2301,
+        h1: 0xefcd_ab89,
+        h2: 0x98ba_dcfe,
+        h3: 0x1032_5476,
+        h4: 0xc3d2_e1f0,
     };
 
     let mut data = Vec::<u8>::new();

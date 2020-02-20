@@ -86,10 +86,10 @@ where
     S: Copy,
 {
     ChainLenIterator {
-        iter1: iter1,
+        iter1,
         len: 0,
-        func: func,
+        func,
         iter2: None,
-        state: state,
+        state,
     }
 }
