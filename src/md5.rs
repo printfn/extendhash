@@ -266,7 +266,7 @@ pub fn padding_length_for_input_length(input_length: usize) -> usize {
 ///     0x33, 0x2c, 0xa3, 0x4b, 0xda, 0x6c, 0xba, 0x9d]);
 /// ```
 pub fn compute_hash(input: &[u8]) -> [u8; 16] {
-    compute_hash_iter(input.iter().cloned())
+    compute_hash_iter(input.iter().copied())
 }
 
 fn compute_hash_iter(input: impl Iterator<Item = u8>) -> [u8; 16] {
@@ -320,7 +320,7 @@ fn compute_hash_iter(input: impl Iterator<Item = u8>) -> [u8; 16] {
 ///     md5::compute_hash(combined_data.as_slice()));
 /// ```
 pub fn extend_hash(hash: [u8; 16], length: usize, additional_input: &[u8]) -> [u8; 16] {
-    extend_hash_iter(hash, length, additional_input.iter().cloned())
+    extend_hash_iter(hash, length, additional_input.iter().copied())
 }
 
 fn extend_hash_iter(
