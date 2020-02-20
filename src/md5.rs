@@ -348,9 +348,7 @@ mod tests {
 
     #[test]
     fn long_test() {
-        let a_value = "a".as_bytes();
-        assert_eq!(a_value.len(), 1);
-        let input: [u8; 1_000_000] = [a_value[0]; 1_000_000];
+        let input: [u8; 1_000_000] = [b'a'; 1_000_000];
         assert_eq!(
             md5::compute_hash(&input[..]),
             [
