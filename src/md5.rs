@@ -192,7 +192,7 @@ fn padding(input_length: usize) -> impl Iterator<Item = u8> {
 
     iter::once(0b1000_0000)
         .chain(iter::repeat(0b0000_0000).take(padding_length - 9))
-        .chain(chunks::make_u8_array_iter(len_as_bytes))
+        .chain(chunks::make_len_8_array_iter(len_as_bytes))
 }
 
 fn pad_iter(input: impl Iterator<Item = u8>, additional_length: usize) -> impl Iterator<Item = u8> {

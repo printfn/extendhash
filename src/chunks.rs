@@ -72,10 +72,7 @@ where
     }
 }
 
-pub fn chain_with_len<T, F, J>(
-    iter1: impl Iterator<Item = T>,
-    func: F,
-) -> impl Iterator<Item = T>
+pub fn chain_with_len<T, F, J>(iter1: impl Iterator<Item = T>, func: F) -> impl Iterator<Item = T>
 where
     F: FnMut(usize) -> J,
     J: Iterator<Item = T>,
@@ -88,15 +85,21 @@ where
     }
 }
 
-pub struct U8ArrayIter {
+pub struct ArrayLen8Iter<T>
+where
+    T: Copy,
+{
     idx: usize,
-    arr: [u8; 8]
+    arr: [T; 8],
 }
 
-impl Iterator for U8ArrayIter {
-    type Item = u8;
+impl<T> Iterator for ArrayLen8Iter<T>
+where
+    T: Copy,
+{
+    type Item = T;
 
-    fn next(&mut self) -> Option<u8> {
+    fn next(&mut self) -> Option<T> {
         if self.idx < 8 {
             let val = self.arr[self.idx];
             self.idx += 1;
@@ -107,9 +110,9 @@ impl Iterator for U8ArrayIter {
     }
 }
 
-pub fn make_u8_array_iter(arr: [u8; 8]) -> U8ArrayIter {
-    U8ArrayIter {
-        arr,
-        idx: 0
-    }
+pub fn make_len_8_array_iter<T>(arr: [T; 8]) -> ArrayLen8Iter<T>
+where
+    T: Copy,
+{
+    ArrayLen8Iter { arr, idx: 0 }
 }
