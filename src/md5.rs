@@ -192,14 +192,7 @@ fn padding(input_length: usize) -> impl Iterator<Item = u8> {
 
     iter::once(0b1000_0000)
         .chain(iter::repeat(0b0000_0000).take(padding_length - 9))
-        .chain(iter::once(len_as_bytes[0]))
-        .chain(iter::once(len_as_bytes[1]))
-        .chain(iter::once(len_as_bytes[2]))
-        .chain(iter::once(len_as_bytes[3]))
-        .chain(iter::once(len_as_bytes[4]))
-        .chain(iter::once(len_as_bytes[5]))
-        .chain(iter::once(len_as_bytes[6]))
-        .chain(iter::once(len_as_bytes[7]))
+        .chain(chunks::make_u8_array_iter(len_as_bytes))
 }
 
 fn pad_iter(input: impl Iterator<Item = u8>, additional_length: usize) -> impl Iterator<Item = u8> {
@@ -260,8 +253,8 @@ pub fn padding_length_for_input_length(input_length: usize) -> usize {
 ///     0x16, 0x4c, 0x37, 0x5b, 0x4a, 0x5d, 0xf4, 0x4a,
 ///     0x33, 0x2c, 0xa3, 0x4b, 0xda, 0x6c, 0xba, 0x9d]);
 /// ```
-pub fn compute_hash(input: &[u8]) -> [u8; 16] {
-    compute_hash_iter(input.iter().copied())
+pub fn compute_hash<'a>(input: impl IntoIterator<Item = &'a u8>) -> [u8; 16] {
+    compute_hash_iter(input.into_iter().copied())
 }
 
 fn compute_hash_iter(input: impl Iterator<Item = u8>) -> [u8; 16] {

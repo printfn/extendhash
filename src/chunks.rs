@@ -93,3 +93,29 @@ where
         state,
     }
 }
+
+pub struct U8ArrayIter {
+    idx: usize,
+    arr: [u8; 8]
+}
+
+impl Iterator for U8ArrayIter {
+    type Item = u8;
+
+    fn next(&mut self) -> Option<u8> {
+        if self.idx < 8 {
+            let val = self.arr[self.idx];
+            self.idx += 1;
+            Some(val)
+        } else {
+            None
+        }
+    }
+}
+
+pub fn make_u8_array_iter(arr: [u8; 8]) -> U8ArrayIter {
+    U8ArrayIter {
+        arr,
+        idx: 0
+    }
+}
