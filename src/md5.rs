@@ -196,7 +196,7 @@ fn padding(input_length: usize) -> impl Iterator<Item = u8> {
 }
 
 fn pad_iter(input: impl Iterator<Item = u8>, additional_length: usize) -> impl Iterator<Item = u8> {
-    chunks::chain_with_len(input, |l, a| padding(l + a), additional_length)
+    chunks::chain_with_len(input, move |l| padding(l + additional_length))
 }
 
 /// Compute the MD5 padding length (in bytes) for the given

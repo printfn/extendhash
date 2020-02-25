@@ -35,26 +35,23 @@ pub fn chunks_from_iter<T: Copy>(
     }
 }
 
-struct ChainLenIterator<T, I, F, J, S>
+struct ChainLenIterator<T, I, F, J>
 where
     I: Iterator<Item = T>,
-    F: FnMut(usize, S) -> J,
+    F: FnMut(usize) -> J,
     J: Iterator<Item = T>,
-    S: Copy,
 {
     iter1: I,
     len: usize,
     func: F,
     iter2: Option<J>,
-    state: S,
 }
 
-impl<T, I, F, J, S> Iterator for ChainLenIterator<T, I, F, J, S>
+impl<T, I, F, J> Iterator for ChainLenIterator<T, I, F, J>
 where
     I: Iterator<Item = T>,
-    F: FnMut(usize, S) -> J,
+    F: FnMut(usize) -> J,
     J: Iterator<Item = T>,
-    S: Copy,
 {
     type Item = T;
 
@@ -67,7 +64,7 @@ where
                     Some(res)
                 }
                 None => {
-                    self.iter2 = Some((self.func)(self.len, self.state));
+                    self.iter2 = Some((self.func)(self.len));
                     self.next()
                 }
             },
@@ -75,22 +72,19 @@ where
     }
 }
 
-pub fn chain_with_len<T, F, J, S>(
+pub fn chain_with_len<T, F, J>(
     iter1: impl Iterator<Item = T>,
     func: F,
-    state: S,
 ) -> impl Iterator<Item = T>
 where
-    F: FnMut(usize, S) -> J,
+    F: FnMut(usize) -> J,
     J: Iterator<Item = T>,
-    S: Copy,
 {
     ChainLenIterator {
         iter1,
         len: 0,
         func,
         iter2: None,
-        state,
     }
 }
 
