@@ -13,8 +13,6 @@ Supported hash algorithms:
   * SHA-256
   * SHA-512
 
-This crate is tested on Rust 1.41.0.
-
 ## Usage
 
 ```rust
