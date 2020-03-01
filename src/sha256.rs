@@ -83,7 +83,7 @@ impl SHA256 {
         let mut g: u32 = self.h[6];
         let mut h: u32 = self.h[7];
 
-        let mut w: [u32; 64] = [0; 64];
+        let mut w = [0u32; 64];
         for i in 0..64 {
             if i < 16 {
                 w[i] = u32::from_be_bytes([

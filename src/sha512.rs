@@ -99,7 +99,7 @@ impl SHA512 {
         let mut g: u64 = self.h[6];
         let mut h: u64 = self.h[7];
 
-        let mut w: [u64; 80] = [0; 80];
+        let mut w = [0u64; 80];
         for i in 0..80 {
             if i < 16 {
                 w[i] = u64::from_be_bytes([

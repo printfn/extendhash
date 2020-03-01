@@ -25,7 +25,7 @@ impl SHA1 {
         let mut d: u32 = self.h3;
         let mut e: u32 = self.h4;
 
-        let mut w: [u32; 80] = [0; 80];
+        let mut w = [0u32; 80];
         for i in 0..80 {
             if i < 16 {
                 w[i] = u32::from_be_bytes([
