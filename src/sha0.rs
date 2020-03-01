@@ -132,17 +132,8 @@ pub fn compute_hash(input: &[u8]) -> [u8; 20] {
 ///     combined_hash,
 ///     sha0::compute_hash(combined_data.as_slice()));
 /// ```
-pub fn extend_hash(
-    hash: [u8; 20],
-    length: usize,
-    additional_input: &[u8],
-) -> [u8; 20] {
-    sha01::extend_hash(
-        hash,
-        length,
-        additional_input,
-        sha01::HashType::SHA0,
-    )
+pub fn extend_hash(hash: [u8; 20], length: usize, additional_input: &[u8]) -> [u8; 20] {
+    sha01::extend_hash(hash, length, additional_input, sha01::HashType::SHA0)
 }
 
 #[cfg(test)]
@@ -154,9 +145,8 @@ mod tests {
         assert_eq!(
             sha0::compute_hash("abc".as_bytes()),
             [
-                0x01, 0x64, 0xb8, 0xa9, 0x14, 0xcd, 0x2a, 0x5e, 0x74,
-                0xc4, 0xf7, 0xff, 0x08, 0x2c, 0x4d, 0x97, 0xf1, 0xed,
-                0xf8, 0x80
+                0x01, 0x64, 0xb8, 0xa9, 0x14, 0xcd, 0x2a, 0x5e, 0x74, 0xc4, 0xf7, 0xff, 0x08, 0x2c,
+                0x4d, 0x97, 0xf1, 0xed, 0xf8, 0x80
             ]
         );
     }
@@ -168,9 +158,8 @@ mod tests {
         assert_eq!(
             sha0::compute_hash(input.as_bytes()),
             [
-                0xd2, 0x51, 0x6e, 0xe1, 0xac, 0xfa, 0x5b, 0xaf, 0x33,
-                0xdf, 0xc1, 0xc4, 0x71, 0xe4, 0x38, 0x44, 0x9e, 0xf1,
-                0x34, 0xc8
+                0xd2, 0x51, 0x6e, 0xe1, 0xac, 0xfa, 0x5b, 0xaf, 0x33, 0xdf, 0xc1, 0xc4, 0x71, 0xe4,
+                0x38, 0x44, 0x9e, 0xf1, 0x34, 0xc8
             ]
         );
     }
@@ -192,10 +181,7 @@ mod tests {
         assert_eq!(sha0::padding_length_for_input_length(63), 64 + 1);
         assert_eq!(sha0::padding_length_for_input_length(64), 64);
         assert_eq!(sha0::padding_length_for_input_length(128), 64);
-        assert_eq!(
-            sha0::padding_length_for_input_length(64 * 100000),
-            64
-        );
+        assert_eq!(sha0::padding_length_for_input_length(64 * 100000), 64);
     }
 
     #[test]
@@ -206,17 +192,13 @@ mod tests {
         let hash = sha0::compute_hash(secret);
 
         let appended_str = "&waffle=liege".as_bytes();
-        let combined_hash =
-            sha0::extend_hash(hash, secret.len(), appended_str);
+        let combined_hash = sha0::extend_hash(hash, secret.len(), appended_str);
 
         let mut concatenation = Vec::<u8>::new();
         concatenation.extend_from_slice(secret);
         let padding = sha0::padding_for_length(secret.len());
         concatenation.extend_from_slice(padding.as_slice());
         concatenation.extend_from_slice(appended_str);
-        assert_eq!(
-            combined_hash,
-            sha0::compute_hash(concatenation.as_slice())
-        );
+        assert_eq!(combined_hash, sha0::compute_hash(concatenation.as_slice()));
     }
 }
