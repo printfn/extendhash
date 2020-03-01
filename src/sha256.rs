@@ -96,14 +96,14 @@ impl SHA256 {
 
         let mut h = self.h;
 
-        for i in 0..64 {
+        for (i, &current_w) in w.iter().enumerate() {
             let s1 = h[4].rotate_right(6) ^ h[4].rotate_right(11) ^ h[4].rotate_right(25);
             let ch = (h[4] & h[5]) ^ ((!h[4]) & h[6]);
             let temp1 = h[7]
                 .wrapping_add(s1)
                 .wrapping_add(ch)
                 .wrapping_add(Self::K[i])
-                .wrapping_add(w[i]);
+                .wrapping_add(current_w);
             let s0 = h[0].rotate_right(2) ^ h[0].rotate_right(13) ^ h[0].rotate_right(22);
             let maj = (h[0] & h[1]) ^ (h[0] & h[2]) ^ (h[1] & h[2]);
             let temp2 = s0.wrapping_add(maj);

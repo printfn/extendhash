@@ -37,7 +37,7 @@ impl SHA1 {
 
         let mut h = self.h;
 
-        for i in 0..80 {
+        for (i, &current_w) in w.iter().enumerate() {
             let (f, k) = match i {
                 0..=19 => ((h[1] & h[2]) | ((!h[1]) & h[3]), 0x5a82_7999),
                 20..=39 => (h[1] ^ h[2] ^ h[3], 0x6ed9_eba1),
@@ -51,7 +51,7 @@ impl SHA1 {
                 .wrapping_add(f)
                 .wrapping_add(h[4])
                 .wrapping_add(k)
-                .wrapping_add(w[i]);
+                .wrapping_add(current_w);
 
             h[4] = h[3];
             h[3] = h[2];
