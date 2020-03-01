@@ -16,6 +16,16 @@ pub enum HashType {
 }
 
 impl SHA1 {
+    fn new() -> SHA1 {
+        SHA1 {
+            h0: 0x6745_2301,
+            h1: 0xefcd_ab89,
+            h2: 0x98ba_dcfe,
+            h3: 0x1032_5476,
+            h4: 0xc3d2_e1f0,
+        }
+    }
+
     fn apply_chunk(&mut self, chunk: &[u8], hash_type: HashType) {
         assert_eq!(chunk.len(), 64);
 
@@ -144,13 +154,7 @@ pub fn padding_length_for_input_length(input_length: usize) -> usize {
 ///
 /// This function returns the computed SHA-0/SHA-1 hash.
 pub fn compute_hash(input: &[u8], hash_type: HashType) -> [u8; 20] {
-    let mut sha1 = SHA1 {
-        h0: 0x6745_2301,
-        h1: 0xefcd_ab89,
-        h2: 0x98ba_dcfe,
-        h3: 0x1032_5476,
-        h4: 0xc3d2_e1f0,
-    };
+    let mut sha1 = SHA1::new();
 
     let mut data = Vec::<u8>::new();
     data.extend_from_slice(input);

@@ -4,6 +4,21 @@ struct SHA256 {
 }
 
 impl SHA256 {
+    fn new() -> SHA256 {
+        SHA256 {
+            h: [
+                0x6a09_e667,
+                0xbb67_ae85,
+                0x3c6e_f372,
+                0xa54f_f53a,
+                0x510e_527f,
+                0x9b05_688c,
+                0x1f83_d9ab,
+                0x5be0_cd19,
+            ],
+        }
+    }
+
     fn apply_chunk(&mut self, chunk: &[u8]) {
         assert_eq!(chunk.len(), 64);
 
@@ -250,18 +265,7 @@ pub fn padding_length_for_input_length(input_length: usize) -> usize {
 ///     0x4b, 0x1f, 0xb6, 0x94, 0x21, 0x85, 0x99, 0x93]);
 /// ```
 pub fn compute_hash(input: &[u8]) -> [u8; 32] {
-    let mut sha256 = SHA256 {
-        h: [
-            0x6a09_e667,
-            0xbb67_ae85,
-            0x3c6e_f372,
-            0xa54f_f53a,
-            0x510e_527f,
-            0x9b05_688c,
-            0x1f83_d9ab,
-            0x5be0_cd19,
-        ],
-    };
+    let mut sha256 = SHA256::new();
 
     let mut data = Vec::<u8>::new();
     data.extend_from_slice(input);

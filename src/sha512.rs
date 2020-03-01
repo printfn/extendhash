@@ -4,6 +4,21 @@ struct SHA512 {
 }
 
 impl SHA512 {
+    fn new() -> SHA512 {
+        SHA512 {
+            h: [
+                0x6a09_e667_f3bc_c908,
+                0xbb67_ae85_84ca_a73b,
+                0x3c6e_f372_fe94_f82b,
+                0xa54f_f53a_5f1d_36f1,
+                0x510e_527f_ade6_82d1,
+                0x9b05_688c_2b3e_6c1f,
+                0x1f83_d9ab_fb41_bd6b,
+                0x5be0_cd19_137e_2179,
+            ],
+        }
+    }
+
     const K: [u64; 80] = [
         0x428a_2f98_d728_ae22,
         0x7137_4491_23ef_65cd,
@@ -276,18 +291,7 @@ pub fn padding_length_for_input_length(input_length: usize) -> usize {
 ///     0x4b, 0xb8, 0xd8, 0x3b, 0xbf, 0x00, 0x94, 0xdb][..]);
 /// ```
 pub fn compute_hash(input: &[u8]) -> [u8; 64] {
-    let mut sha512 = SHA512 {
-        h: [
-            0x6a09_e667_f3bc_c908,
-            0xbb67_ae85_84ca_a73b,
-            0x3c6e_f372_fe94_f82b,
-            0xa54f_f53a_5f1d_36f1,
-            0x510e_527f_ade6_82d1,
-            0x9b05_688c_2b3e_6c1f,
-            0x1f83_d9ab_fb41_bd6b,
-            0x5be0_cd19_137e_2179,
-        ],
-    };
+    let mut sha512 = SHA512::new();
 
     let mut data = Vec::<u8>::new();
     data.extend_from_slice(input);

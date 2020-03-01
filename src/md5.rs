@@ -7,6 +7,15 @@ struct MD5 {
 }
 
 impl MD5 {
+    fn new() -> MD5 {
+        MD5 {
+            a0: 0x6745_2301,
+            b0: 0xefcd_ab89,
+            c0: 0x98ba_dcfe,
+            d0: 0x1032_5476,
+        }
+    }
+
     fn apply_chunk(&mut self, chunk: &[u8]) {
         assert_eq!(chunk.len(), 64);
 
@@ -230,12 +239,7 @@ pub fn padding_length_for_input_length(input_length: usize) -> usize {
 ///     0x33, 0x2c, 0xa3, 0x4b, 0xda, 0x6c, 0xba, 0x9d]);
 /// ```
 pub fn compute_hash(input: &[u8]) -> [u8; 16] {
-    let mut md5 = MD5 {
-        a0: 0x6745_2301,
-        b0: 0xefcd_ab89,
-        c0: 0x98ba_dcfe,
-        d0: 0x1032_5476,
-    };
+    let mut md5 = MD5::new();
 
     let mut data = Vec::<u8>::new();
     data.extend_from_slice(input);
