@@ -2,11 +2,7 @@
 
 #[derive(Clone)]
 struct SHA1 {
-    h0: u32,
-    h1: u32,
-    h2: u32,
-    h3: u32,
-    h4: u32,
+    h: [u32; 5],
 }
 
 #[derive(Copy, Clone)]
@@ -18,28 +14,24 @@ pub enum HashType {
 impl SHA1 {
     fn new() -> SHA1 {
         SHA1 {
-            h0: 0x6745_2301,
-            h1: 0xefcd_ab89,
-            h2: 0x98ba_dcfe,
-            h3: 0x1032_5476,
-            h4: 0xc3d2_e1f0,
+            h: [
+                0x6745_2301,
+                0xefcd_ab89,
+                0x98ba_dcfe,
+                0x1032_5476,
+                0xc3d2_e1f0,
+            ],
         }
     }
 
     fn apply_chunk(&mut self, chunk: &[u8], hash_type: HashType) {
         assert_eq!(chunk.len(), 64);
 
-        let mut a: u32 = self.h0;
-        let mut b: u32 = self.h1;
-        let mut c: u32 = self.h2;
-        let mut d: u32 = self.h3;
-        let mut e: u32 = self.h4;
-
         let mut w = [0u32; 80];
         for i in 0..80 {
             if i < 16 {
                 w[i] = u32::from_be_bytes([
-                    chunk[4 * i + 0],
+                    chunk[4 * i],
                     chunk[4 * i + 1],
                     chunk[4 * i + 2],
                     chunk[4 * i + 3],
@@ -53,45 +45,50 @@ impl SHA1 {
             }
         }
 
-        for i in 0..80 {
+        let mut h = self.h;
+
+        for (i, &current_w) in w.iter().enumerate() {
             let (f, k) = match i {
-                0..=19 => ((b & c) | ((!b) & d), 0x5a82_7999),
-                20..=39 => (b ^ c ^ d, 0x6ed9_eba1),
-                40..=59 => ((b & c) | (b & d) | (c & d), 0x8f1b_bcdc),
-                60..=79 => (b ^ c ^ d, 0xca62_c1d6),
+                0..=19 => ((h[1] & h[2]) | ((!h[1]) & h[3]), 0x5a82_7999),
+                20..=39 => (h[1] ^ h[2] ^ h[3], 0x6ed9_eba1),
+                40..=59 => ((h[1] & h[2]) | (h[1] & h[3]) | (h[2] & h[3]), 0x8f1b_bcdc),
+                60..=79 => (h[1] ^ h[2] ^ h[3], 0xca62_c1d6),
                 _ => unreachable!(),
             };
 
-            let temp = a
+            let temp = h[0]
                 .rotate_left(5)
                 .wrapping_add(f)
-                .wrapping_add(e)
+                .wrapping_add(h[4])
                 .wrapping_add(k)
-                .wrapping_add(w[i]);
+                .wrapping_add(current_w);
 
-            e = d;
-            d = c;
-            c = b.rotate_left(30);
-            b = a;
-            a = temp;
+            h[4] = h[3];
+            h[3] = h[2];
+            h[2] = h[1].rotate_left(30);
+            h[1] = h[0];
+            h[0] = temp;
         }
 
-        self.h0 = self.h0.wrapping_add(a);
-        self.h1 = self.h1.wrapping_add(b);
-        self.h2 = self.h2.wrapping_add(c);
-        self.h3 = self.h3.wrapping_add(d);
-        self.h4 = self.h4.wrapping_add(e);
+        self.h[0] = self.h[0].wrapping_add(h[0]);
+        self.h[1] = self.h[1].wrapping_add(h[1]);
+        self.h[2] = self.h[2].wrapping_add(h[2]);
+        self.h[3] = self.h[3].wrapping_add(h[3]);
+        self.h[4] = self.h[4].wrapping_add(h[4]);
     }
 
     fn hash_from_data(&self) -> [u8; 20] {
-        let a = self.h0.to_be_bytes();
-        let b = self.h1.to_be_bytes();
-        let c = self.h2.to_be_bytes();
-        let d = self.h3.to_be_bytes();
-        let e = self.h4.to_be_bytes();
+        let h = [
+            self.h[0].to_be_bytes(),
+            self.h[1].to_be_bytes(),
+            self.h[2].to_be_bytes(),
+            self.h[3].to_be_bytes(),
+            self.h[4].to_be_bytes(),
+        ];
         [
-            a[0], a[1], a[2], a[3], b[0], b[1], b[2], b[3], c[0], c[1], c[2], c[3], d[0], d[1],
-            d[2], d[3], e[0], e[1], e[2], e[3],
+            h[0][0], h[0][1], h[0][2], h[0][3], h[1][0], h[1][1], h[1][2], h[1][3], h[2][0],
+            h[2][1], h[2][2], h[2][3], h[3][0], h[3][1], h[3][2], h[3][3], h[4][0], h[4][1],
+            h[4][2], h[4][3],
         ]
     }
 }
@@ -190,11 +187,13 @@ pub fn extend_hash(
     hash_type: HashType,
 ) -> [u8; 20] {
     let mut sha1 = SHA1 {
-        h0: u32::from_be_bytes([hash[0], hash[1], hash[2], hash[3]]),
-        h1: u32::from_be_bytes([hash[4], hash[5], hash[6], hash[7]]),
-        h2: u32::from_be_bytes([hash[8], hash[9], hash[10], hash[11]]),
-        h3: u32::from_be_bytes([hash[12], hash[13], hash[14], hash[15]]),
-        h4: u32::from_be_bytes([hash[16], hash[17], hash[18], hash[19]]),
+        h: [
+            u32::from_be_bytes([hash[0], hash[1], hash[2], hash[3]]),
+            u32::from_be_bytes([hash[4], hash[5], hash[6], hash[7]]),
+            u32::from_be_bytes([hash[8], hash[9], hash[10], hash[11]]),
+            u32::from_be_bytes([hash[12], hash[13], hash[14], hash[15]]),
+            u32::from_be_bytes([hash[16], hash[17], hash[18], hash[19]]),
+        ],
     };
 
     let len = length + padding_length_for_input_length(length) + additional_input.len();
