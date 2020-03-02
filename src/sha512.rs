@@ -102,7 +102,7 @@ impl SHA512 {
         0x6c44_198c_4a47_5817,
     ];
 
-    fn apply_chunk(&mut self, chunk: &[u8]) {
+    fn apply_chunk(self, chunk: &[u8]) -> SHA512 {
         assert_eq!(chunk.len(), 128);
 
         let mut w = [0u64; 80];
@@ -152,17 +152,21 @@ impl SHA512 {
             h[0] = temp1.wrapping_add(temp2);
         }
 
-        self.h[0] = self.h[0].wrapping_add(h[0]);
-        self.h[1] = self.h[1].wrapping_add(h[1]);
-        self.h[2] = self.h[2].wrapping_add(h[2]);
-        self.h[3] = self.h[3].wrapping_add(h[3]);
-        self.h[4] = self.h[4].wrapping_add(h[4]);
-        self.h[5] = self.h[5].wrapping_add(h[5]);
-        self.h[6] = self.h[6].wrapping_add(h[6]);
-        self.h[7] = self.h[7].wrapping_add(h[7]);
+        SHA512 {
+            h: [
+                self.h[0].wrapping_add(h[0]),
+                self.h[1].wrapping_add(h[1]),
+                self.h[2].wrapping_add(h[2]),
+                self.h[3].wrapping_add(h[3]),
+                self.h[4].wrapping_add(h[4]),
+                self.h[5].wrapping_add(h[5]),
+                self.h[6].wrapping_add(h[6]),
+                self.h[7].wrapping_add(h[7]),
+            ],
+        }
     }
 
-    fn hash_from_data(&self) -> [u8; 64] {
+    fn hash_from_data(self) -> [u8; 64] {
         let h = [
             self.h[0].to_be_bytes(),
             self.h[1].to_be_bytes(),
@@ -296,7 +300,7 @@ pub fn compute_hash(input: &[u8]) -> [u8; 64] {
     data.extend_from_slice(padding_for_length(input.len()).as_slice());
     assert_eq!(data.len() % 128, 0);
     for chunk in data.chunks_exact(128) {
-        sha512.apply_chunk(chunk);
+        sha512 = sha512.apply_chunk(chunk);
     }
 
     sha512.hash_from_data()
@@ -383,7 +387,7 @@ pub fn extend_hash(hash: [u8; 64], length: usize, additional_input: &[u8]) -> [u
     assert_eq!(data.len() % 128, 0);
 
     for chunk in data.chunks_exact(128) {
-        sha512.apply_chunk(chunk);
+        sha512 = sha512.apply_chunk(chunk);
     }
 
     sha512.hash_from_data()

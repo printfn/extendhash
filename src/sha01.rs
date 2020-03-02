@@ -24,7 +24,7 @@ impl SHA1 {
         }
     }
 
-    fn apply_chunk(&mut self, chunk: &[u8], hash_type: HashType) {
+    fn apply_chunk(self, chunk: &[u8], hash_type: HashType) -> SHA1 {
         assert_eq!(chunk.len(), 64);
 
         let mut w = [0u32; 80];
@@ -70,14 +70,18 @@ impl SHA1 {
             h[0] = temp;
         }
 
-        self.h[0] = self.h[0].wrapping_add(h[0]);
-        self.h[1] = self.h[1].wrapping_add(h[1]);
-        self.h[2] = self.h[2].wrapping_add(h[2]);
-        self.h[3] = self.h[3].wrapping_add(h[3]);
-        self.h[4] = self.h[4].wrapping_add(h[4]);
+        SHA1 {
+            h: [
+                self.h[0].wrapping_add(h[0]),
+                self.h[1].wrapping_add(h[1]),
+                self.h[2].wrapping_add(h[2]),
+                self.h[3].wrapping_add(h[3]),
+                self.h[4].wrapping_add(h[4]),
+            ],
+        }
     }
 
-    fn hash_from_data(&self) -> [u8; 20] {
+    fn hash_from_data(self) -> [u8; 20] {
         let h = [
             self.h[0].to_be_bytes(),
             self.h[1].to_be_bytes(),
@@ -158,7 +162,7 @@ pub fn compute_hash(input: &[u8], hash_type: HashType) -> [u8; 20] {
     data.extend_from_slice(padding_for_length(input.len()).as_slice());
     assert_eq!(data.len() % 64, 0);
     for chunk in data.chunks_exact(64) {
-        sha1.apply_chunk(chunk, hash_type);
+        sha1 = sha1.apply_chunk(chunk, hash_type);
     }
 
     sha1.hash_from_data()
@@ -204,7 +208,7 @@ pub fn extend_hash(
     assert_eq!(data.len() % 64, 0);
 
     for chunk in data.chunks_exact(64) {
-        sha1.apply_chunk(chunk, hash_type);
+        sha1 = sha1.apply_chunk(chunk, hash_type);
     }
 
     sha1.hash_from_data()

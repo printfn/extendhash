@@ -86,7 +86,7 @@ impl SHA256 {
         }
     }
 
-    fn apply_chunk(&mut self, chunk: &[u8]) {
+    fn apply_chunk(self, chunk: &[u8]) -> SHA256 {
         assert_eq!(chunk.len(), 64);
 
         let mut w = [0u32; 64];
@@ -132,17 +132,21 @@ impl SHA256 {
             h[0] = temp1.wrapping_add(temp2);
         }
 
-        self.h[0] = self.h[0].wrapping_add(h[0]);
-        self.h[1] = self.h[1].wrapping_add(h[1]);
-        self.h[2] = self.h[2].wrapping_add(h[2]);
-        self.h[3] = self.h[3].wrapping_add(h[3]);
-        self.h[4] = self.h[4].wrapping_add(h[4]);
-        self.h[5] = self.h[5].wrapping_add(h[5]);
-        self.h[6] = self.h[6].wrapping_add(h[6]);
-        self.h[7] = self.h[7].wrapping_add(h[7]);
+        SHA256 {
+            h: [
+                self.h[0].wrapping_add(h[0]),
+                self.h[1].wrapping_add(h[1]),
+                self.h[2].wrapping_add(h[2]),
+                self.h[3].wrapping_add(h[3]),
+                self.h[4].wrapping_add(h[4]),
+                self.h[5].wrapping_add(h[5]),
+                self.h[6].wrapping_add(h[6]),
+                self.h[7].wrapping_add(h[7]),
+            ],
+        }
     }
 
-    fn hash_from_data(&self) -> [u8; 32] {
+    fn hash_from_data(self) -> [u8; 32] {
         let h = [
             self.h[0].to_be_bytes(),
             self.h[1].to_be_bytes(),
@@ -268,7 +272,7 @@ pub fn compute_hash(input: &[u8]) -> [u8; 32] {
     data.extend_from_slice(padding_for_length(input.len()).as_slice());
     assert_eq!(data.len() % 64, 0);
     for chunk in data.chunks_exact(64) {
-        sha256.apply_chunk(chunk);
+        sha256 = sha256.apply_chunk(chunk);
     }
 
     sha256.hash_from_data()
@@ -339,7 +343,7 @@ pub fn extend_hash(hash: [u8; 32], length: usize, additional_input: &[u8]) -> [u
     assert_eq!(data.len() % 64, 0);
 
     for chunk in data.chunks_exact(64) {
-        sha256.apply_chunk(chunk);
+        sha256 = sha256.apply_chunk(chunk);
     }
 
     sha256.hash_from_data()

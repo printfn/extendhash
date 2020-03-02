@@ -83,7 +83,7 @@ impl MD5 {
         }
     }
 
-    fn apply_chunk(&mut self, chunk: &[u8]) {
+    fn apply_chunk(self, chunk: &[u8]) -> MD5 {
         assert_eq!(chunk.len(), 64);
 
         let mut h = self.h;
@@ -115,13 +115,17 @@ impl MD5 {
             h[1] = h[1].wrapping_add(f.rotate_left(Self::S[i as usize]));
         }
 
-        self.h[0] = self.h[0].wrapping_add(h[0]);
-        self.h[1] = self.h[1].wrapping_add(h[1]);
-        self.h[2] = self.h[2].wrapping_add(h[2]);
-        self.h[3] = self.h[3].wrapping_add(h[3]);
+        MD5 {
+            h: [
+                self.h[0].wrapping_add(h[0]),
+                self.h[1].wrapping_add(h[1]),
+                self.h[2].wrapping_add(h[2]),
+                self.h[3].wrapping_add(h[3]),
+            ],
+        }
     }
 
-    fn hash_from_data(&self) -> [u8; 16] {
+    fn hash_from_data(self) -> [u8; 16] {
         let h = [
             self.h[0].to_le_bytes(),
             self.h[1].to_le_bytes(),
@@ -239,7 +243,7 @@ pub fn compute_hash(input: &[u8]) -> [u8; 16] {
     data.extend_from_slice(padding_for_length(input.len()).as_slice());
     assert_eq!(data.len() % 64, 0);
     for chunk in data.chunks_exact(64) {
-        md5.apply_chunk(chunk);
+        md5 = md5.apply_chunk(chunk);
     }
 
     md5.hash_from_data()
@@ -306,7 +310,7 @@ pub fn extend_hash(hash: [u8; 16], length: usize, additional_input: &[u8]) -> [u
     assert_eq!(data.len() % 64, 0);
 
     for chunk in data.chunks_exact(64) {
-        md5.apply_chunk(chunk);
+        md5 = md5.apply_chunk(chunk);
     }
 
     md5.hash_from_data()
