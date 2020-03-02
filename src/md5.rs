@@ -77,12 +77,6 @@ impl MD5 {
         0xeb86_d391,
     ];
 
-    fn new() -> MD5 {
-        MD5 {
-            h: [0x6745_2301, 0xefcd_ab89, 0x98ba_dcfe, 0x1032_5476],
-        }
-    }
-
     fn apply_chunk(self, chunk: &[u8]) -> MD5 {
         assert_eq!(chunk.len(), 64);
 
@@ -136,6 +130,14 @@ impl MD5 {
             h[0][0], h[0][1], h[0][2], h[0][3], h[1][0], h[1][1], h[1][2], h[1][3], h[2][0],
             h[2][1], h[2][2], h[2][3], h[3][0], h[3][1], h[3][2], h[3][3],
         ]
+    }
+}
+
+impl Default for MD5 {
+    fn default() -> MD5 {
+        MD5 {
+            h: [0x6745_2301, 0xefcd_ab89, 0x98ba_dcfe, 0x1032_5476],
+        }
     }
 }
 
@@ -236,16 +238,14 @@ pub fn padding_length_for_input_length(input_length: usize) -> usize {
 ///     0x33, 0x2c, 0xa3, 0x4b, 0xda, 0x6c, 0xba, 0x9d]);
 /// ```
 pub fn compute_hash(input: &[u8]) -> [u8; 16] {
-    let mut md5 = MD5::new();
-
     let mut data = Vec::<u8>::new();
     data.extend_from_slice(input);
     data.extend_from_slice(padding_for_length(input.len()).as_slice());
     assert_eq!(data.len() % 64, 0);
-    for chunk in data.chunks_exact(64) {
-        md5 = md5.apply_chunk(chunk);
-    }
 
+    let md5 = data
+        .chunks_exact(64)
+        .fold(MD5::default(), |md5, chunk| md5.apply_chunk(chunk));
     md5.hash_from_data()
 }
 

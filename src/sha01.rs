@@ -12,18 +12,6 @@ pub enum HashType {
 }
 
 impl SHA1 {
-    fn new() -> SHA1 {
-        SHA1 {
-            h: [
-                0x6745_2301,
-                0xefcd_ab89,
-                0x98ba_dcfe,
-                0x1032_5476,
-                0xc3d2_e1f0,
-            ],
-        }
-    }
-
     fn apply_chunk(self, chunk: &[u8], hash_type: HashType) -> SHA1 {
         assert_eq!(chunk.len(), 64);
 
@@ -97,6 +85,20 @@ impl SHA1 {
     }
 }
 
+impl Default for SHA1 {
+    fn default() -> SHA1 {
+        SHA1 {
+            h: [
+                0x6745_2301,
+                0xefcd_ab89,
+                0x98ba_dcfe,
+                0x1032_5476,
+                0xc3d2_e1f0,
+            ],
+        }
+    }
+}
+
 /// Compute the SHA-0/SHA-1 padding for the given input length.
 ///
 /// # Arguments
@@ -155,16 +157,14 @@ pub fn padding_length_for_input_length(input_length: usize) -> usize {
 ///
 /// This function returns the computed SHA-0/SHA-1 hash.
 pub fn compute_hash(input: &[u8], hash_type: HashType) -> [u8; 20] {
-    let mut sha1 = SHA1::new();
-
     let mut data = Vec::<u8>::new();
     data.extend_from_slice(input);
     data.extend_from_slice(padding_for_length(input.len()).as_slice());
     assert_eq!(data.len() % 64, 0);
-    for chunk in data.chunks_exact(64) {
-        sha1 = sha1.apply_chunk(chunk, hash_type);
-    }
 
+    let sha1 = data.chunks_exact(64).fold(SHA1::default(), |sha1, chunk| {
+        sha1.apply_chunk(chunk, hash_type)
+    });
     sha1.hash_from_data()
 }
 
