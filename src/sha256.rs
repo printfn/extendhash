@@ -168,6 +168,23 @@ impl Default for SHA256 {
     }
 }
 
+impl From<[u8; 32]> for SHA256 {
+    fn from(hash: [u8; 32]) -> SHA256 {
+        SHA256 {
+            h: [
+                u32::from_be_bytes([hash[0], hash[1], hash[2], hash[3]]),
+                u32::from_be_bytes([hash[4], hash[5], hash[6], hash[7]]),
+                u32::from_be_bytes([hash[8], hash[9], hash[10], hash[11]]),
+                u32::from_be_bytes([hash[12], hash[13], hash[14], hash[15]]),
+                u32::from_be_bytes([hash[16], hash[17], hash[18], hash[19]]),
+                u32::from_be_bytes([hash[20], hash[21], hash[22], hash[23]]),
+                u32::from_be_bytes([hash[24], hash[25], hash[26], hash[27]]),
+                u32::from_be_bytes([hash[28], hash[29], hash[30], hash[31]]),
+            ],
+        }
+    }
+}
+
 /// Compute the SHA-256 padding for the given input length.
 ///
 /// # Arguments
@@ -322,18 +339,7 @@ pub fn compute_hash(input: &[u8]) -> [u8; 32] {
 ///     sha256::compute_hash(combined_data.as_slice()));
 /// ```
 pub fn extend_hash(hash: [u8; 32], length: usize, additional_input: &[u8]) -> [u8; 32] {
-    let mut sha256 = SHA256 {
-        h: [
-            u32::from_be_bytes([hash[0], hash[1], hash[2], hash[3]]),
-            u32::from_be_bytes([hash[4], hash[5], hash[6], hash[7]]),
-            u32::from_be_bytes([hash[8], hash[9], hash[10], hash[11]]),
-            u32::from_be_bytes([hash[12], hash[13], hash[14], hash[15]]),
-            u32::from_be_bytes([hash[16], hash[17], hash[18], hash[19]]),
-            u32::from_be_bytes([hash[20], hash[21], hash[22], hash[23]]),
-            u32::from_be_bytes([hash[24], hash[25], hash[26], hash[27]]),
-            u32::from_be_bytes([hash[28], hash[29], hash[30], hash[31]]),
-        ],
-    };
+    let mut sha256 = SHA256::from(hash);
 
     let len = length + padding_length_for_input_length(length) + additional_input.len();
 

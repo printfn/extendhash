@@ -1,6 +1,5 @@
 // This file contains shared code for SHA-0 and SHA-1.
-
-#[derive(Clone)]
+#[derive(Copy, Clone)]
 struct SHA1 {
     h: [u32; 5],
 }
@@ -99,6 +98,20 @@ impl Default for SHA1 {
     }
 }
 
+impl From<[u8; 20]> for SHA1 {
+    fn from(hash: [u8; 20]) -> SHA1 {
+        SHA1 {
+            h: [
+                u32::from_be_bytes([hash[0], hash[1], hash[2], hash[3]]),
+                u32::from_be_bytes([hash[4], hash[5], hash[6], hash[7]]),
+                u32::from_be_bytes([hash[8], hash[9], hash[10], hash[11]]),
+                u32::from_be_bytes([hash[12], hash[13], hash[14], hash[15]]),
+                u32::from_be_bytes([hash[16], hash[17], hash[18], hash[19]]),
+            ],
+        }
+    }
+}
+
 /// Compute the SHA-0/SHA-1 padding for the given input length.
 ///
 /// # Arguments
@@ -190,15 +203,7 @@ pub fn extend_hash(
     additional_input: &[u8],
     hash_type: HashType,
 ) -> [u8; 20] {
-    let mut sha1 = SHA1 {
-        h: [
-            u32::from_be_bytes([hash[0], hash[1], hash[2], hash[3]]),
-            u32::from_be_bytes([hash[4], hash[5], hash[6], hash[7]]),
-            u32::from_be_bytes([hash[8], hash[9], hash[10], hash[11]]),
-            u32::from_be_bytes([hash[12], hash[13], hash[14], hash[15]]),
-            u32::from_be_bytes([hash[16], hash[17], hash[18], hash[19]]),
-        ],
-    };
+    let mut sha1 = SHA1::from(hash);
 
     let len = length + padding_length_for_input_length(length) + additional_input.len();
 

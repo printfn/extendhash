@@ -1,4 +1,6 @@
-#[derive(Clone)]
+use crate::hash::Hash;
+
+#[derive(Copy, Clone)]
 struct MD5 {
     h: [u32; 4],
 }
@@ -76,7 +78,9 @@ impl MD5 {
         0x2ad7_d2bb,
         0xeb86_d391,
     ];
+}
 
+impl Hash<[u8; 16]> for MD5 {
     fn apply_chunk(self, chunk: &[u8]) -> MD5 {
         assert_eq!(chunk.len(), 64);
 
@@ -137,6 +141,19 @@ impl Default for MD5 {
     fn default() -> MD5 {
         MD5 {
             h: [0x6745_2301, 0xefcd_ab89, 0x98ba_dcfe, 0x1032_5476],
+        }
+    }
+}
+
+impl From<[u8; 16]> for MD5 {
+    fn from(hash: [u8; 16]) -> MD5 {
+        MD5 {
+            h: [
+                u32::from_le_bytes([hash[0], hash[1], hash[2], hash[3]]),
+                u32::from_le_bytes([hash[4], hash[5], hash[6], hash[7]]),
+                u32::from_le_bytes([hash[8], hash[9], hash[10], hash[11]]),
+                u32::from_le_bytes([hash[12], hash[13], hash[14], hash[15]]),
+            ],
         }
     }
 }
@@ -293,14 +310,7 @@ pub fn compute_hash(input: &[u8]) -> [u8; 16] {
 ///     md5::compute_hash(combined_data.as_slice()));
 /// ```
 pub fn extend_hash(hash: [u8; 16], length: usize, additional_input: &[u8]) -> [u8; 16] {
-    let mut md5 = MD5 {
-        h: [
-            u32::from_le_bytes([hash[0], hash[1], hash[2], hash[3]]),
-            u32::from_le_bytes([hash[4], hash[5], hash[6], hash[7]]),
-            u32::from_le_bytes([hash[8], hash[9], hash[10], hash[11]]),
-            u32::from_le_bytes([hash[12], hash[13], hash[14], hash[15]]),
-        ],
-    };
+    let mut md5 = MD5::from(hash);
 
     let len = length + padding_length_for_input_length(length) + additional_input.len();
 

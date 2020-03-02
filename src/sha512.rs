@@ -192,6 +192,39 @@ impl Default for SHA512 {
     }
 }
 
+impl From<[u8; 64]> for SHA512 {
+    fn from(hash: [u8; 64]) -> SHA512 {
+        SHA512 {
+            h: [
+                u64::from_be_bytes([
+                    hash[0], hash[1], hash[2], hash[3], hash[4], hash[5], hash[6], hash[7],
+                ]),
+                u64::from_be_bytes([
+                    hash[8], hash[9], hash[10], hash[11], hash[12], hash[13], hash[14], hash[15],
+                ]),
+                u64::from_be_bytes([
+                    hash[16], hash[17], hash[18], hash[19], hash[20], hash[21], hash[22], hash[23],
+                ]),
+                u64::from_be_bytes([
+                    hash[24], hash[25], hash[26], hash[27], hash[28], hash[29], hash[30], hash[31],
+                ]),
+                u64::from_be_bytes([
+                    hash[32], hash[33], hash[34], hash[35], hash[36], hash[37], hash[38], hash[39],
+                ]),
+                u64::from_be_bytes([
+                    hash[40], hash[41], hash[42], hash[43], hash[44], hash[45], hash[46], hash[47],
+                ]),
+                u64::from_be_bytes([
+                    hash[48], hash[49], hash[50], hash[51], hash[52], hash[53], hash[54], hash[55],
+                ]),
+                u64::from_be_bytes([
+                    hash[56], hash[57], hash[58], hash[59], hash[60], hash[61], hash[62], hash[63],
+                ]),
+            ],
+        }
+    }
+}
+
 /// Compute the SHA-512 padding for the given input length.
 ///
 /// # Arguments
@@ -350,34 +383,7 @@ pub fn compute_hash(input: &[u8]) -> [u8; 64] {
 ///     &sha512::compute_hash(combined_data.as_slice())[..]);
 /// ```
 pub fn extend_hash(hash: [u8; 64], length: usize, additional_input: &[u8]) -> [u8; 64] {
-    let mut sha512 = SHA512 {
-        h: [
-            u64::from_be_bytes([
-                hash[0], hash[1], hash[2], hash[3], hash[4], hash[5], hash[6], hash[7],
-            ]),
-            u64::from_be_bytes([
-                hash[8], hash[9], hash[10], hash[11], hash[12], hash[13], hash[14], hash[15],
-            ]),
-            u64::from_be_bytes([
-                hash[16], hash[17], hash[18], hash[19], hash[20], hash[21], hash[22], hash[23],
-            ]),
-            u64::from_be_bytes([
-                hash[24], hash[25], hash[26], hash[27], hash[28], hash[29], hash[30], hash[31],
-            ]),
-            u64::from_be_bytes([
-                hash[32], hash[33], hash[34], hash[35], hash[36], hash[37], hash[38], hash[39],
-            ]),
-            u64::from_be_bytes([
-                hash[40], hash[41], hash[42], hash[43], hash[44], hash[45], hash[46], hash[47],
-            ]),
-            u64::from_be_bytes([
-                hash[48], hash[49], hash[50], hash[51], hash[52], hash[53], hash[54], hash[55],
-            ]),
-            u64::from_be_bytes([
-                hash[56], hash[57], hash[58], hash[59], hash[60], hash[61], hash[62], hash[63],
-            ]),
-        ],
-    };
+    let mut sha512 = SHA512::from(hash);
 
     let len = length + padding_length_for_input_length(length) + additional_input.len();
 

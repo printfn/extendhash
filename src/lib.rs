@@ -190,3 +190,6 @@ pub mod sha256;
 ///     &sha512::compute_hash(combined_data.as_slice())[..]);
 /// ```
 pub mod sha512;
+
+/// Describes the `Hash` trait that all hash algorithms implement.
+pub(crate) mod hash;
