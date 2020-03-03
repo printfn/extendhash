@@ -1,4 +1,5 @@
 use crate::hash::Hash;
+use core::iter;
 
 #[derive(Copy, Clone)]
 struct MD5 {
@@ -78,6 +79,29 @@ impl MD5 {
         0x2ad7_d2bb,
         0xeb86_d391,
     ];
+
+    fn padding_length_for_input_length(input_length: usize) -> usize {
+        if input_length % 64 <= 55 {
+            64 - input_length % 64
+        } else {
+            128 - input_length % 64
+        }
+    }
+
+    fn padding_for_length(input_length: usize) -> impl Iterator<Item = u8> {
+        let len_as_bytes = (input_length as u64).wrapping_mul(8).to_le_bytes();
+
+        iter::once(0b1000_0000)
+            .chain(iter::repeat(0).take(Self::padding_length_for_input_length(input_length) - 9))
+            .chain(iter::once(len_as_bytes[0]))
+            .chain(iter::once(len_as_bytes[1]))
+            .chain(iter::once(len_as_bytes[2]))
+            .chain(iter::once(len_as_bytes[3]))
+            .chain(iter::once(len_as_bytes[4]))
+            .chain(iter::once(len_as_bytes[5]))
+            .chain(iter::once(len_as_bytes[6]))
+            .chain(iter::once(len_as_bytes[7]))
+    }
 }
 
 impl Hash<[u8; 16]> for MD5 {
@@ -190,14 +214,7 @@ impl From<[u8; 16]> for MD5 {
 /// }
 /// ```
 pub fn padding_for_length(input_length: usize) -> Vec<u8> {
-    let padding_length = padding_length_for_input_length(input_length);
-    let mut result = Vec::<u8>::with_capacity(padding_length);
-    result.push(0b1000_0000);
-    for _ in 0..(padding_length - 9) {
-        result.push(0b0000_0000);
-    }
-    result.extend_from_slice(&(input_length as u64).wrapping_mul(8).to_le_bytes());
-    result
+    MD5::padding_for_length(input_length).collect()
 }
 
 /// Compute the MD5 padding length (in bytes) for the given
@@ -226,11 +243,7 @@ pub fn padding_for_length(input_length: usize) -> Vec<u8> {
 /// assert_eq!(data.len() + padding_length, 64);
 /// ```
 pub fn padding_length_for_input_length(input_length: usize) -> usize {
-    if input_length % 64 <= 55 {
-        64 - input_length % 64
-    } else {
-        128 - input_length % 64
-    }
+    MD5::padding_length_for_input_length(input_length)
 }
 
 /// Compute the MD5 hash of the input data
@@ -255,15 +268,17 @@ pub fn padding_length_for_input_length(input_length: usize) -> usize {
 ///     0x33, 0x2c, 0xa3, 0x4b, 0xda, 0x6c, 0xba, 0x9d]);
 /// ```
 pub fn compute_hash(input: &[u8]) -> [u8; 16] {
-    let mut data = Vec::<u8>::new();
-    data.extend_from_slice(input);
-    data.extend_from_slice(padding_for_length(input.len()).as_slice());
+    let data: Vec<u8> = input
+        .iter()
+        .copied()
+        .chain(MD5::padding_for_length(input.len()))
+        .collect();
+
     assert_eq!(data.len() % 64, 0);
 
-    let md5 = data
-        .chunks_exact(64)
-        .fold(MD5::default(), |md5, chunk| md5.apply_chunk(chunk));
-    md5.hash_from_data()
+    data.chunks_exact(64)
+        .fold(MD5::default(), |md5, chunk| md5.apply_chunk(chunk))
+        .hash_from_data()
 }
 
 /// Calculate an MD5 hash extension.
@@ -310,20 +325,19 @@ pub fn compute_hash(input: &[u8]) -> [u8; 16] {
 ///     md5::compute_hash(combined_data.as_slice()));
 /// ```
 pub fn extend_hash(hash: [u8; 16], length: usize, additional_input: &[u8]) -> [u8; 16] {
-    let mut md5 = MD5::from(hash);
-
     let len = length + padding_length_for_input_length(length) + additional_input.len();
 
-    let mut data = Vec::<u8>::new();
-    data.extend_from_slice(additional_input);
-    data.extend_from_slice(padding_for_length(len).as_slice());
+    let data: Vec<u8> = additional_input
+        .iter()
+        .copied()
+        .chain(MD5::padding_for_length(len))
+        .collect();
+
     assert_eq!(data.len() % 64, 0);
 
-    for chunk in data.chunks_exact(64) {
-        md5 = md5.apply_chunk(chunk);
-    }
-
-    md5.hash_from_data()
+    data.chunks_exact(64)
+        .fold(MD5::from(hash), |md5, chunk| md5.apply_chunk(chunk))
+        .hash_from_data()
 }
 
 #[cfg(test)]
