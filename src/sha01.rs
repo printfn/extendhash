@@ -1,4 +1,6 @@
 // This file contains shared code for SHA-0 and SHA-1.
+use core::iter;
+
 #[derive(Copy, Clone)]
 struct SHA1 {
     h: [u32; 5],
@@ -82,6 +84,29 @@ impl SHA1 {
             h[4][2], h[4][3],
         ]
     }
+
+    fn padding_for_length(input_length: usize) -> impl Iterator<Item = u8> {
+        let len_as_bytes = (input_length as u64).wrapping_mul(8).to_be_bytes();
+
+        iter::once(0b1000_0000)
+            .chain(iter::repeat(0).take(Self::padding_length_for_input_length(input_length) - 9))
+            .chain(iter::once(len_as_bytes[0]))
+            .chain(iter::once(len_as_bytes[1]))
+            .chain(iter::once(len_as_bytes[2]))
+            .chain(iter::once(len_as_bytes[3]))
+            .chain(iter::once(len_as_bytes[4]))
+            .chain(iter::once(len_as_bytes[5]))
+            .chain(iter::once(len_as_bytes[6]))
+            .chain(iter::once(len_as_bytes[7]))
+    }
+
+    fn padding_length_for_input_length(input_length: usize) -> usize {
+        if input_length % 64 <= 55 {
+            64 - input_length % 64
+        } else {
+            128 - input_length % 64
+        }
+    }
 }
 
 impl Default for SHA1 {
@@ -126,14 +151,7 @@ impl From<[u8; 20]> for SHA1 {
 /// This padding has a length you can determine by calling
 /// `sha01::padding_length_for_input_length`.
 pub fn padding_for_length(input_length: usize) -> Vec<u8> {
-    let padding_length = padding_length_for_input_length(input_length);
-    let mut result = Vec::<u8>::with_capacity(padding_length);
-    result.push(0b1000_0000);
-    for _ in 0..(padding_length - 9) {
-        result.push(0b0000_0000);
-    }
-    result.extend_from_slice(&(input_length as u64).wrapping_mul(8).to_be_bytes());
-    result
+    SHA1::padding_for_length(input_length).collect()
 }
 
 /// Compute the SHA-0/SHA-1 padding length (in bytes) for the given
@@ -152,11 +170,7 @@ pub fn padding_for_length(input_length: usize) -> Vec<u8> {
 /// This function returns the amount of padding required for
 /// the given input length.
 pub fn padding_length_for_input_length(input_length: usize) -> usize {
-    if input_length % 64 <= 55 {
-        64 - input_length % 64
-    } else {
-        128 - input_length % 64
-    }
+    SHA1::padding_length_for_input_length(input_length)
 }
 
 /// Compute the SHA-0/SHA-1 hash of the input data
@@ -170,15 +184,17 @@ pub fn padding_length_for_input_length(input_length: usize) -> usize {
 ///
 /// This function returns the computed SHA-0/SHA-1 hash.
 pub fn compute_hash(input: &[u8], hash_type: HashType) -> [u8; 20] {
-    let mut data = Vec::<u8>::new();
-    data.extend_from_slice(input);
-    data.extend_from_slice(padding_for_length(input.len()).as_slice());
+    let data: Vec<u8> = input
+        .iter()
+        .copied()
+        .chain(SHA1::padding_for_length(input.len()))
+        .collect();
+
     assert_eq!(data.len() % 64, 0);
 
-    let sha1 = data.chunks_exact(64).fold(SHA1::default(), |sha1, chunk| {
-        sha1.apply_chunk(chunk, hash_type)
-    });
-    sha1.hash_from_data()
+    data.chunks_exact(64)
+        .fold(SHA1::default(), |sha1, chunk| sha1.apply_chunk(chunk, hash_type))
+        .hash_from_data()
 }
 
 /// Calculate a SHA-0/SHA-1 hash extension.
@@ -203,20 +219,19 @@ pub fn extend_hash(
     additional_input: &[u8],
     hash_type: HashType,
 ) -> [u8; 20] {
-    let mut sha1 = SHA1::from(hash);
-
     let len = length + padding_length_for_input_length(length) + additional_input.len();
 
-    let mut data = Vec::<u8>::new();
-    data.extend_from_slice(additional_input);
-    data.extend_from_slice(padding_for_length(len).as_slice());
+    let data: Vec<u8> = additional_input
+        .iter()
+        .copied()
+        .chain(SHA1::padding_for_length(len))
+        .collect();
+
     assert_eq!(data.len() % 64, 0);
 
-    for chunk in data.chunks_exact(64) {
-        sha1 = sha1.apply_chunk(chunk, hash_type);
-    }
-
-    sha1.hash_from_data()
+    data.chunks_exact(64)
+        .fold(SHA1::from(hash), |sha1, chunk| sha1.apply_chunk(chunk, hash_type))
+        .hash_from_data()
 }
 
 #[cfg(test)]
