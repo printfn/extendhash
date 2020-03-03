@@ -80,14 +80,6 @@ impl MD5 {
         0xeb86_d391,
     ];
 
-    fn padding_length_for_input_length(input_length: usize) -> usize {
-        if input_length % 64 <= 55 {
-            64 - input_length % 64
-        } else {
-            128 - input_length % 64
-        }
-    }
-
     fn padding_for_length(input_length: usize) -> impl Iterator<Item = u8> {
         let len_as_bytes = (input_length as u64).wrapping_mul(8).to_le_bytes();
 
@@ -158,6 +150,14 @@ impl Hash<[u8; 16]> for MD5 {
             h[0][0], h[0][1], h[0][2], h[0][3], h[1][0], h[1][1], h[1][2], h[1][3], h[2][0],
             h[2][1], h[2][2], h[2][3], h[3][0], h[3][1], h[3][2], h[3][3],
         ]
+    }
+
+    fn padding_length_for_input_length(input_length: usize) -> usize {
+        if input_length % 64 <= 55 {
+            64 - input_length % 64
+        } else {
+            128 - input_length % 64
+        }
     }
 }
 

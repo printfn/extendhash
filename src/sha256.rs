@@ -1,4 +1,7 @@
-#[derive(Clone)]
+use crate::hash::Hash;
+use core::iter;
+
+#[derive(Copy, Clone)]
 struct SHA256 {
     h: [u32; 8],
 }
@@ -71,6 +74,23 @@ impl SHA256 {
         0xc671_78f2,
     ];
 
+    fn padding_for_length(input_length: usize) -> impl Iterator<Item = u8> {
+        let len_as_bytes = (input_length as u64).wrapping_mul(8).to_be_bytes();
+
+        iter::once(0b1000_0000)
+            .chain(iter::repeat(0).take(Self::padding_length_for_input_length(input_length) - 9))
+            .chain(iter::once(len_as_bytes[0]))
+            .chain(iter::once(len_as_bytes[1]))
+            .chain(iter::once(len_as_bytes[2]))
+            .chain(iter::once(len_as_bytes[3]))
+            .chain(iter::once(len_as_bytes[4]))
+            .chain(iter::once(len_as_bytes[5]))
+            .chain(iter::once(len_as_bytes[6]))
+            .chain(iter::once(len_as_bytes[7]))
+    }
+}
+
+impl Hash<[u8; 32]> for SHA256 {
     fn apply_chunk(self, chunk: &[u8]) -> SHA256 {
         assert_eq!(chunk.len(), 64);
 
@@ -149,6 +169,14 @@ impl SHA256 {
             h[6][3], h[7][0], h[7][1], h[7][2], h[7][3],
         ]
     }
+
+    fn padding_length_for_input_length(input_length: usize) -> usize {
+        if input_length % 64 <= 55 {
+            64 - input_length % 64
+        } else {
+            128 - input_length % 64
+        }
+    }
 }
 
 impl Default for SHA256 {
@@ -217,14 +245,7 @@ impl From<[u8; 32]> for SHA256 {
 /// }
 /// ```
 pub fn padding_for_length(input_length: usize) -> Vec<u8> {
-    let padding_length = padding_length_for_input_length(input_length);
-    let mut result = Vec::<u8>::with_capacity(padding_length);
-    result.push(0b1000_0000);
-    for _ in 0..(padding_length - 9) {
-        result.push(0b0000_0000);
-    }
-    result.extend_from_slice(&(input_length as u64).wrapping_mul(8).to_be_bytes());
-    result
+    SHA256::padding_for_length(input_length).collect()
 }
 
 /// Compute the SHA-256 padding length (in bytes) for the
@@ -253,11 +274,7 @@ pub fn padding_for_length(input_length: usize) -> Vec<u8> {
 /// assert_eq!(data.len() + padding_length, 64);
 /// ```
 pub fn padding_length_for_input_length(input_length: usize) -> usize {
-    if input_length % 64 <= 55 {
-        64 - input_length % 64
-    } else {
-        128 - input_length % 64
-    }
+    SHA256::padding_length_for_input_length(input_length)
 }
 
 /// Compute the SHA-256 hash of the input data
@@ -284,15 +301,17 @@ pub fn padding_length_for_input_length(input_length: usize) -> usize {
 ///     0x4b, 0x1f, 0xb6, 0x94, 0x21, 0x85, 0x99, 0x93]);
 /// ```
 pub fn compute_hash(input: &[u8]) -> [u8; 32] {
-    let mut data = Vec::<u8>::new();
-    data.extend_from_slice(input);
-    data.extend_from_slice(padding_for_length(input.len()).as_slice());
+    let data: Vec<u8> = input
+        .iter()
+        .copied()
+        .chain(SHA256::padding_for_length(input.len()))
+        .collect();
+
     assert_eq!(data.len() % 64, 0);
 
-    let sha256 = data
-        .chunks_exact(64)
-        .fold(SHA256::default(), |sha256, chunk| sha256.apply_chunk(chunk));
-    sha256.hash_from_data()
+    data.chunks_exact(64)
+        .fold(SHA256::default(), |sha256, chunk| sha256.apply_chunk(chunk))
+        .hash_from_data()
 }
 
 /// Calculate a SHA-256 hash extension.
@@ -339,20 +358,19 @@ pub fn compute_hash(input: &[u8]) -> [u8; 32] {
 ///     sha256::compute_hash(combined_data.as_slice()));
 /// ```
 pub fn extend_hash(hash: [u8; 32], length: usize, additional_input: &[u8]) -> [u8; 32] {
-    let mut sha256 = SHA256::from(hash);
-
     let len = length + padding_length_for_input_length(length) + additional_input.len();
 
-    let mut data = Vec::<u8>::new();
-    data.extend_from_slice(additional_input);
-    data.extend_from_slice(padding_for_length(len).as_slice());
+    let data: Vec<u8> = additional_input
+        .iter()
+        .copied()
+        .chain(SHA256::padding_for_length(len))
+        .collect();
+
     assert_eq!(data.len() % 64, 0);
 
-    for chunk in data.chunks_exact(64) {
-        sha256 = sha256.apply_chunk(chunk);
-    }
-
-    sha256.hash_from_data()
+    data.chunks_exact(64)
+        .fold(SHA256::from(hash), |sha256, chunk| sha256.apply_chunk(chunk))
+        .hash_from_data()
 }
 
 #[cfg(test)]
