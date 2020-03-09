@@ -1,5 +1,6 @@
 // This file contains shared code for SHA-0 and SHA-1.
 use core::iter;
+use alloc::vec::Vec;
 
 #[derive(Copy, Clone)]
 struct SHA1 {
@@ -238,6 +239,8 @@ pub fn extend_hash(
 mod tests {
     use crate::sha01;
     use crate::sha01::HashType;
+    use alloc::vec::Vec;
+    use alloc::string::String;
 
     #[test]
     fn empty_hash() {

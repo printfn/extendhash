@@ -7,7 +7,8 @@ description = "Rust Hash Extender"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/printfn/extendhash"
 readme = "README.md"
-keywords = ["hash", "md5", "sha1", "sha256"]
+keywords = ["hash", "md5", "sha1", "sha256", "no-std"]
+categories = ["no-std", "algorithms"]
 
 # See more keys and their definitions at 
 # https://doc.rust-lang.org/cargo/reference/manifest.html

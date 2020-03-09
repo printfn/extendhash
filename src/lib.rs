@@ -38,6 +38,10 @@
 
 #![doc(html_root_url = "https://docs.rs/extendhash/1.0.7")]
 
+#![no_std]
+
+extern crate alloc;
+
 /// Compute MD5 hashes and hash extensions.
 ///
 /// # Example

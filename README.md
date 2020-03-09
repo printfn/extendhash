@@ -13,6 +13,8 @@ Supported hash algorithms:
   * SHA-256
   * SHA-512
 
+It supports `#![no_std]`.
+
 ## Usage
 
 ```rust

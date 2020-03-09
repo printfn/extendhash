@@ -1,4 +1,5 @@
 use crate::sha01;
+use alloc::vec::Vec;
 
 /// Compute the SHA-1 padding for the given input length.
 ///
@@ -140,6 +141,7 @@ pub fn extend_hash(hash: [u8; 20], length: usize, additional_input: &[u8]) -> [u
 #[cfg(test)]
 mod tests {
     use crate::sha1;
+    use alloc::vec::Vec;
 
     #[test]
     fn empty_hash() {

@@ -1,5 +1,6 @@
 use crate::hash::Hash;
 use core::iter;
+use alloc::vec::Vec;
 
 #[derive(Copy, Clone)]
 struct SHA512 {
@@ -428,6 +429,7 @@ pub fn extend_hash(hash: [u8; 64], length: usize, additional_input: &[u8]) -> [u
 #[cfg(test)]
 mod tests {
     use crate::sha512;
+    use alloc::vec::Vec;
 
     #[test]
     fn empty_hash() {
