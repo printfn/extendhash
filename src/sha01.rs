@@ -1,6 +1,6 @@
 // This file contains shared code for SHA-0 and SHA-1.
-use core::iter;
 use alloc::vec::Vec;
+use core::iter;
 
 #[derive(Copy, Clone)]
 struct SHA1 {
@@ -194,7 +194,9 @@ pub fn compute_hash(input: &[u8], hash_type: HashType) -> [u8; 20] {
     assert_eq!(data.len() % 64, 0);
 
     data.chunks_exact(64)
-        .fold(SHA1::default(), |sha1, chunk| sha1.apply_chunk(chunk, hash_type))
+        .fold(SHA1::default(), |sha1, chunk| {
+            sha1.apply_chunk(chunk, hash_type)
+        })
         .hash_from_data()
 }
 
@@ -231,7 +233,9 @@ pub fn extend_hash(
     assert_eq!(data.len() % 64, 0);
 
     data.chunks_exact(64)
-        .fold(SHA1::from(hash), |sha1, chunk| sha1.apply_chunk(chunk, hash_type))
+        .fold(SHA1::from(hash), |sha1, chunk| {
+            sha1.apply_chunk(chunk, hash_type)
+        })
         .hash_from_data()
 }
 
@@ -239,8 +243,8 @@ pub fn extend_hash(
 mod tests {
     use crate::sha01;
     use crate::sha01::HashType;
-    use alloc::vec::Vec;
     use alloc::string::String;
+    use alloc::vec::Vec;
 
     #[test]
     fn empty_hash() {

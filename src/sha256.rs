@@ -1,6 +1,6 @@
 use crate::hash::Hash;
-use core::iter;
 use alloc::vec::Vec;
+use core::iter;
 
 #[derive(Copy, Clone)]
 struct SHA256 {
@@ -370,7 +370,9 @@ pub fn extend_hash(hash: [u8; 32], length: usize, additional_input: &[u8]) -> [u
     assert_eq!(data.len() % 64, 0);
 
     data.chunks_exact(64)
-        .fold(SHA256::from(hash), |sha256, chunk| sha256.apply_chunk(chunk))
+        .fold(SHA256::from(hash), |sha256, chunk| {
+            sha256.apply_chunk(chunk)
+        })
         .hash_from_data()
 }
 

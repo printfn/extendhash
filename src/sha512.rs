@@ -1,6 +1,6 @@
 use crate::hash::Hash;
-use core::iter;
 use alloc::vec::Vec;
+use core::iter;
 
 #[derive(Copy, Clone)]
 struct SHA512 {
@@ -422,7 +422,9 @@ pub fn extend_hash(hash: [u8; 64], length: usize, additional_input: &[u8]) -> [u
     assert_eq!(data.len() % 128, 0);
 
     data.chunks_exact(128)
-        .fold(SHA512::from(hash), |sha512, chunk| sha512.apply_chunk(chunk))
+        .fold(SHA512::from(hash), |sha512, chunk| {
+            sha512.apply_chunk(chunk)
+        })
         .hash_from_data()
 }
 

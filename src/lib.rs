@@ -37,7 +37,6 @@
 //! ```
 
 #![doc(html_root_url = "https://docs.rs/extendhash/1.0.8")]
-
 #![no_std]
 
 extern crate alloc;

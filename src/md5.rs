@@ -1,6 +1,6 @@
 use crate::hash::Hash;
-use core::iter;
 use alloc::vec::Vec;
+use core::iter;
 
 #[derive(Copy, Clone)]
 struct MD5 {
