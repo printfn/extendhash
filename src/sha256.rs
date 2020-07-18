@@ -95,7 +95,7 @@ impl Hash<[u8; 32]> for SHA256 {
     fn apply_chunk(self, chunk: &[u8]) -> SHA256 {
         assert_eq!(chunk.len(), 64);
 
-        let mut w = [0u32; 64];
+        let mut w = [0_u32; 64];
         for i in 0..64 {
             if i < 16 {
                 w[i] = u32::from_be_bytes([

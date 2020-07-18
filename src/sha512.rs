@@ -119,7 +119,7 @@ impl Hash<[u8; 64]> for SHA512 {
     fn apply_chunk(self, chunk: &[u8]) -> SHA512 {
         assert_eq!(chunk.len(), 128);
 
-        let mut w = [0u64; 80];
+        let mut w = [0_u64; 80];
         for i in 0..80 {
             if i < 16 {
                 w[i] = u64::from_be_bytes([

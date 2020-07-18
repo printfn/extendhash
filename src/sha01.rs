@@ -17,7 +17,7 @@ impl SHA1 {
     fn apply_chunk(self, chunk: &[u8], hash_type: HashType) -> SHA1 {
         assert_eq!(chunk.len(), 64);
 
-        let mut w = [0u32; 80];
+        let mut w = [0_u32; 80];
         for i in 0..80 {
             if i < 16 {
                 w[i] = u32::from_be_bytes([
