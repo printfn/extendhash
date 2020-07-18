@@ -103,7 +103,7 @@ impl Hash<[u8; 16]> for MD5 {
 
         let mut h = self.h;
 
-        for i in 0..64 {
+        for i in 0_usize..64 {
             let (mut f, g) = match i {
                 0..=15 => ((h[1] & h[2]) | ((!h[1]) & h[3]), i),
                 16..=31 => ((h[3] & h[1]) | ((!h[3]) & h[2]), (5 * i + 1) % 16),
@@ -113,21 +113,21 @@ impl Hash<[u8; 16]> for MD5 {
             };
 
             let slice = [
-                chunk[4 * g as usize],
-                chunk[4 * g as usize + 1],
-                chunk[4 * g as usize + 2],
-                chunk[4 * g as usize + 3],
+                chunk[4 * g],
+                chunk[4 * g + 1],
+                chunk[4 * g + 2],
+                chunk[4 * g + 3],
             ];
 
             f = f
                 .wrapping_add(h[0])
-                .wrapping_add(Self::K[i as usize])
+                .wrapping_add(Self::K[i])
                 .wrapping_add(u32::from_le_bytes(slice));
 
             h[0] = h[3];
             h[3] = h[2];
             h[2] = h[1];
-            h[1] = h[1].wrapping_add(f.rotate_left(Self::S[i as usize]));
+            h[1] = h[1].wrapping_add(f.rotate_left(Self::S[i]));
         }
 
         MD5 {
