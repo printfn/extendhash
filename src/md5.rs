@@ -214,6 +214,7 @@ impl From<[u8; 16]> for MD5 {
 ///     };
 /// }
 /// ```
+#[must_use]
 pub fn padding_for_length(input_length: usize) -> Vec<u8> {
     MD5::padding_for_length(input_length).collect()
 }
@@ -243,6 +244,7 @@ pub fn padding_for_length(input_length: usize) -> Vec<u8> {
 ///     md5::padding_length_for_input_length(data.len());
 /// assert_eq!(data.len() + padding_length, 64);
 /// ```
+#[must_use]
 pub fn padding_length_for_input_length(input_length: usize) -> usize {
     MD5::padding_length_for_input_length(input_length)
 }
@@ -268,6 +270,7 @@ pub fn padding_length_for_input_length(input_length: usize) -> usize {
 ///     0x16, 0x4c, 0x37, 0x5b, 0x4a, 0x5d, 0xf4, 0x4a,
 ///     0x33, 0x2c, 0xa3, 0x4b, 0xda, 0x6c, 0xba, 0x9d]);
 /// ```
+#[must_use]
 pub fn compute_hash(input: &[u8]) -> [u8; 16] {
     let data: Vec<u8> = input
         .iter()
@@ -325,6 +328,7 @@ pub fn compute_hash(input: &[u8]) -> [u8; 16] {
 ///     combined_hash,
 ///     md5::compute_hash(combined_data.as_slice()));
 /// ```
+#[must_use]
 pub fn extend_hash(hash: [u8; 16], length: usize, additional_input: &[u8]) -> [u8; 16] {
     let len = length + padding_length_for_input_length(length) + additional_input.len();
 

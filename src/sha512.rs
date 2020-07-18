@@ -293,6 +293,7 @@ impl From<[u8; 64]> for SHA512 {
 ///     };
 /// }
 /// ```
+#[must_use]
 pub fn padding_for_length(input_length: usize) -> Vec<u8> {
     SHA512::padding_for_length(input_length).collect()
 }
@@ -322,6 +323,7 @@ pub fn padding_for_length(input_length: usize) -> Vec<u8> {
 ///     sha512::padding_length_for_input_length(data.len());
 /// assert_eq!(data.len() + padding_length, 128);
 /// ```
+#[must_use]
 pub fn padding_length_for_input_length(input_length: usize) -> usize {
     SHA512::padding_length_for_input_length(input_length)
 }
@@ -353,6 +355,7 @@ pub fn padding_length_for_input_length(input_length: usize) -> usize {
 ///     0xf2, 0x34, 0xe3, 0xdf, 0xd7, 0xcd, 0x4a, 0x34,
 ///     0x4b, 0xb8, 0xd8, 0x3b, 0xbf, 0x00, 0x94, 0xdb][..]);
 /// ```
+#[must_use]
 pub fn compute_hash(input: &[u8]) -> [u8; 64] {
     let data: Vec<u8> = input
         .iter()
@@ -410,6 +413,7 @@ pub fn compute_hash(input: &[u8]) -> [u8; 64] {
 ///     &combined_hash[..],
 ///     &sha512::compute_hash(combined_data.as_slice())[..]);
 /// ```
+#[must_use]
 pub fn extend_hash(hash: [u8; 64], length: usize, additional_input: &[u8]) -> [u8; 64] {
     let len = length + padding_length_for_input_length(length) + additional_input.len();
 

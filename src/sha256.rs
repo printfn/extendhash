@@ -245,6 +245,7 @@ impl From<[u8; 32]> for SHA256 {
 ///     };
 /// }
 /// ```
+#[must_use]
 pub fn padding_for_length(input_length: usize) -> Vec<u8> {
     SHA256::padding_for_length(input_length).collect()
 }
@@ -274,6 +275,7 @@ pub fn padding_for_length(input_length: usize) -> Vec<u8> {
 ///     sha256::padding_length_for_input_length(data.len());
 /// assert_eq!(data.len() + padding_length, 64);
 /// ```
+#[must_use]
 pub fn padding_length_for_input_length(input_length: usize) -> usize {
     SHA256::padding_length_for_input_length(input_length)
 }
@@ -301,6 +303,7 @@ pub fn padding_length_for_input_length(input_length: usize) -> usize {
 ///     0x14, 0xf4, 0xf7, 0x0f, 0x73, 0x50, 0x22, 0xbd,
 ///     0x4b, 0x1f, 0xb6, 0x94, 0x21, 0x85, 0x99, 0x93]);
 /// ```
+#[must_use]
 pub fn compute_hash(input: &[u8]) -> [u8; 32] {
     let data: Vec<u8> = input
         .iter()
@@ -358,6 +361,7 @@ pub fn compute_hash(input: &[u8]) -> [u8; 32] {
 ///     combined_hash,
 ///     sha256::compute_hash(combined_data.as_slice()));
 /// ```
+#[must_use]
 pub fn extend_hash(hash: [u8; 32], length: usize, additional_input: &[u8]) -> [u8; 32] {
     let len = length + padding_length_for_input_length(length) + additional_input.len();
 

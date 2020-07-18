@@ -32,6 +32,7 @@ use alloc::vec::Vec;
 ///     };
 /// }
 /// ```
+#[must_use]
 pub fn padding_for_length(input_length: usize) -> Vec<u8> {
     sha01::padding_for_length(input_length)
 }
@@ -61,6 +62,7 @@ pub fn padding_for_length(input_length: usize) -> Vec<u8> {
 ///     sha0::padding_length_for_input_length(data.len());
 /// assert_eq!(data.len() + padding_length, 64);
 /// ```
+#[must_use]
 pub fn padding_length_for_input_length(input_length: usize) -> usize {
     sha01::padding_length_for_input_length(input_length)
 }
@@ -86,6 +88,7 @@ pub fn padding_length_for_input_length(input_length: usize) -> usize {
 ///     0x01, 0x64, 0xb8, 0xa9, 0x14, 0xcd, 0x2a, 0x5e, 0x74, 0xc4,
 ///     0xf7, 0xff, 0x08, 0x2c, 0x4d, 0x97, 0xf1, 0xed, 0xf8, 0x80]);
 /// ```
+#[must_use]
 pub fn compute_hash(input: &[u8]) -> [u8; 20] {
     sha01::compute_hash(input, sha01::HashType::SHA0)
 }
@@ -133,6 +136,7 @@ pub fn compute_hash(input: &[u8]) -> [u8; 20] {
 ///     combined_hash,
 ///     sha0::compute_hash(combined_data.as_slice()));
 /// ```
+#[must_use]
 pub fn extend_hash(hash: [u8; 20], length: usize, additional_input: &[u8]) -> [u8; 20] {
     sha01::extend_hash(hash, length, additional_input, sha01::HashType::SHA0)
 }
