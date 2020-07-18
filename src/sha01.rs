@@ -71,7 +71,7 @@ impl SHA1 {
         }
     }
 
-    fn hash_from_data(self) -> [u8; 20] {
+    const fn hash_from_data(self) -> [u8; 20] {
         let h = [
             self.h[0].to_be_bytes(),
             self.h[1].to_be_bytes(),
