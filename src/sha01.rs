@@ -14,7 +14,7 @@ pub enum HashType {
 }
 
 impl SHA1 {
-    fn apply_chunk(self, chunk: &[u8], hash_type: HashType) -> SHA1 {
+    fn apply_chunk(self, chunk: &[u8], hash_type: HashType) -> Self {
         assert_eq!(chunk.len(), 64);
 
         let mut w = [0_u32; 80];
@@ -60,7 +60,7 @@ impl SHA1 {
             h[0] = temp;
         }
 
-        SHA1 {
+        Self {
             h: [
                 self.h[0].wrapping_add(h[0]),
                 self.h[1].wrapping_add(h[1]),
@@ -101,7 +101,7 @@ impl SHA1 {
             .chain(iter::once(len_as_bytes[7]))
     }
 
-    fn padding_length_for_input_length(input_length: usize) -> usize {
+    const fn padding_length_for_input_length(input_length: usize) -> usize {
         if input_length % 64 <= 55 {
             64 - input_length % 64
         } else {
@@ -111,8 +111,8 @@ impl SHA1 {
 }
 
 impl Default for SHA1 {
-    fn default() -> SHA1 {
-        SHA1 {
+    fn default() -> Self {
+        Self {
             h: [
                 0x6745_2301,
                 0xefcd_ab89,
@@ -125,8 +125,8 @@ impl Default for SHA1 {
 }
 
 impl From<[u8; 20]> for SHA1 {
-    fn from(hash: [u8; 20]) -> SHA1 {
-        SHA1 {
+    fn from(hash: [u8; 20]) -> Self {
+        Self {
             h: [
                 u32::from_be_bytes([hash[0], hash[1], hash[2], hash[3]]),
                 u32::from_be_bytes([hash[4], hash[5], hash[6], hash[7]]),
@@ -170,7 +170,7 @@ pub fn padding_for_length(input_length: usize) -> Vec<u8> {
 ///
 /// This function returns the amount of padding required for
 /// the given input length.
-pub fn padding_length_for_input_length(input_length: usize) -> usize {
+pub const fn padding_length_for_input_length(input_length: usize) -> usize {
     SHA1::padding_length_for_input_length(input_length)
 }
 
@@ -260,7 +260,7 @@ mod tests {
     #[test]
     fn a_test() {
         assert_eq!(
-            sha01::compute_hash("a".as_bytes(), HashType::SHA1),
+            sha01::compute_hash(b"a", HashType::SHA1),
             [
                 0x86, 0xf7, 0xe4, 0x37, 0xfa, 0xa5, 0xa7, 0xfc, 0xe1, 0x5d, 0x1d, 0xdc, 0xb9, 0xea,
                 0xea, 0xea, 0x37, 0x76, 0x67, 0xb8
@@ -272,7 +272,7 @@ mod tests {
     fn quick_brown_fox_test() {
         assert_eq!(
             sha01::compute_hash(
-                "The quick brown fox jumps over the lazy dog".as_bytes(),
+                b"The quick brown fox jumps over the lazy dog",
                 HashType::SHA1
             ),
             [
@@ -286,7 +286,7 @@ mod tests {
     fn quick_brown_fox_test_2() {
         assert_eq!(
             sha01::compute_hash(
-                "The quick brown fox jumps over the lazy cog".as_bytes(),
+                b"The quick brown fox jumps over the lazy cog",
                 HashType::SHA1
             ),
             [
@@ -300,7 +300,7 @@ mod tests {
     fn abc_test() {
         assert_eq!(
             sha01::compute_hash(
-                "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".as_bytes(),
+                b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
                 HashType::SHA1
             ),
             [
@@ -344,17 +344,16 @@ mod tests {
         assert_eq!(sha01::padding_length_for_input_length(63), 64 + 1);
         assert_eq!(sha01::padding_length_for_input_length(64), 64);
         assert_eq!(sha01::padding_length_for_input_length(128), 64);
-        assert_eq!(sha01::padding_length_for_input_length(64 * 100000), 64);
+        assert_eq!(sha01::padding_length_for_input_length(64 * 100_000), 64);
     }
 
     #[test]
     fn test_hash_ext() {
-        let secret = "count=10&lat=37.351&user_id=1&\
-                      long=-119.827&waffle=eggo"
-            .as_bytes();
+        let secret = b"count=10&lat=37.351&user_id=1&\
+                       long=-119.827&waffle=eggo";
         let hash = sha01::compute_hash(secret, HashType::SHA1);
 
-        let appended_str = "&waffle=liege".as_bytes();
+        let appended_str = b"&waffle=liege";
         let combined_hash = sha01::extend_hash(hash, secret.len(), appended_str, HashType::SHA1);
 
         let mut concatenation = Vec::<u8>::new();

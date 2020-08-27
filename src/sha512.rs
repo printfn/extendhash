@@ -116,7 +116,7 @@ impl SHA512 {
 }
 
 impl Hash<[u8; 64]> for SHA512 {
-    fn apply_chunk(self, chunk: &[u8]) -> SHA512 {
+    fn apply_chunk(self, chunk: &[u8]) -> Self {
         assert_eq!(chunk.len(), 128);
 
         let mut w = [0_u64; 80];
@@ -166,7 +166,7 @@ impl Hash<[u8; 64]> for SHA512 {
             h[0] = temp1.wrapping_add(temp2);
         }
 
-        SHA512 {
+        Self {
             h: [
                 self.h[0].wrapping_add(h[0]),
                 self.h[1].wrapping_add(h[1]),
@@ -213,8 +213,8 @@ impl Hash<[u8; 64]> for SHA512 {
 }
 
 impl Default for SHA512 {
-    fn default() -> SHA512 {
-        SHA512 {
+    fn default() -> Self {
+        Self {
             h: [
                 0x6a09_e667_f3bc_c908,
                 0xbb67_ae85_84ca_a73b,
@@ -230,8 +230,8 @@ impl Default for SHA512 {
 }
 
 impl From<[u8; 64]> for SHA512 {
-    fn from(hash: [u8; 64]) -> SHA512 {
-        SHA512 {
+    fn from(hash: [u8; 64]) -> Self {
+        Self {
             h: [
                 u64::from_be_bytes([
                     hash[0], hash[1], hash[2], hash[3], hash[4], hash[5], hash[6], hash[7],
@@ -454,7 +454,7 @@ mod tests {
     #[test]
     fn a_test() {
         assert_eq!(
-            &sha512::compute_hash("a".as_bytes())[..],
+            &sha512::compute_hash(b"a")[..],
             &[
                 0x1f, 0x40, 0xfc, 0x92, 0xda, 0x24, 0x16, 0x94, 0x75, 0x09, 0x79, 0xee, 0x6c, 0xf5,
                 0x82, 0xf2, 0xd5, 0xd7, 0xd2, 0x8e, 0x18, 0x33, 0x5d, 0xe0, 0x5a, 0xbc, 0x54, 0xd0,
@@ -467,9 +467,9 @@ mod tests {
 
     #[test]
     fn quick_brown_fox_test() {
-        let s = "The quick brown fox jumps over the lazy dog";
+        let s = b"The quick brown fox jumps over the lazy dog";
         assert_eq!(
-            &sha512::compute_hash(s.as_bytes())[..],
+            &sha512::compute_hash(s)[..],
             &[
                 0x07, 0xe5, 0x47, 0xd9, 0x58, 0x6f, 0x6a, 0x73, 0xf7, 0x3f, 0xba, 0xc0, 0x43, 0x5e,
                 0xd7, 0x69, 0x51, 0x21, 0x8f, 0xb7, 0xd0, 0xc8, 0xd7, 0x88, 0xa3, 0x09, 0xd7, 0x85,
@@ -482,9 +482,9 @@ mod tests {
 
     #[test]
     fn quick_brown_fox_test_2() {
-        let s = "The quick brown fox jumps over the lazy cog";
+        let s = b"The quick brown fox jumps over the lazy cog";
         assert_eq!(
-            &sha512::compute_hash(s.as_bytes())[..],
+            &sha512::compute_hash(s)[..],
             &[
                 0x3e, 0xee, 0xe1, 0xd0, 0xe1, 0x17, 0x33, 0xef, 0x15, 0x2a, 0x6c, 0x29, 0x50, 0x3b,
                 0x3a, 0xe2, 0x0c, 0x4f, 0x1f, 0x3c, 0xda, 0x4c, 0xb2, 0x6f, 0x1b, 0xc1, 0xa4, 0x1f,
@@ -497,10 +497,10 @@ mod tests {
 
     #[test]
     fn abc_test() {
-        let s = "ABCDEFGHIJKLMNOPQRSTUVWXYZ\
-                 abcdefghijklmnopqrstuvwxyz0123456789";
+        let s = b"ABCDEFGHIJKLMNOPQRSTUVWXYZ\
+                  abcdefghijklmnopqrstuvwxyz0123456789";
         assert_eq!(
-            &sha512::compute_hash(s.as_bytes())[..],
+            &sha512::compute_hash(s)[..],
             &[
                 0x1e, 0x07, 0xbe, 0x23, 0xc2, 0x6a, 0x86, 0xea, 0x37, 0xea, 0x81, 0x0c, 0x8e, 0xc7,
                 0x80, 0x93, 0x52, 0x51, 0x5a, 0x97, 0x0e, 0x92, 0x53, 0xc2, 0x6f, 0x53, 0x6c, 0xfc,
@@ -514,7 +514,7 @@ mod tests {
     #[test]
     fn long_test() {
         assert_eq!(
-            &sha512::compute_hash(&[b'a'; 1_000_000])[..],
+            &sha512::compute_hash(&*alloc::vec![b'a'; 1_000_000].into_boxed_slice())[..],
             &[
                 0xe7, 0x18, 0x48, 0x3d, 0x0c, 0xe7, 0x69, 0x64, 0x4e, 0x2e, 0x42, 0xc7, 0xbc, 0x15,
                 0xb4, 0x63, 0x8e, 0x1f, 0x98, 0xb1, 0x3b, 0x20, 0x44, 0x28, 0x56, 0x32, 0xa8, 0x03,
@@ -544,17 +544,16 @@ mod tests {
         assert_eq!(sha512::padding_length_for_input_length(127), 129);
         assert_eq!(sha512::padding_length_for_input_length(128), 128);
         assert_eq!(sha512::padding_length_for_input_length(256), 128);
-        assert_eq!(sha512::padding_length_for_input_length(128 * 100000), 128);
+        assert_eq!(sha512::padding_length_for_input_length(128 * 100_000), 128);
     }
 
     #[test]
     fn test_hash_ext() {
-        let secret = "count=10&lat=37.351&user_id=1&\
-                      long=-119.827&waffle=eggo"
-            .as_bytes();
+        let secret = b"count=10&lat=37.351&user_id=1&\
+                       long=-119.827&waffle=eggo";
         let hash = sha512::compute_hash(secret);
 
-        let appended_str = "&waffle=liege".as_bytes();
+        let appended_str = b"&waffle=liege";
         let combined_hash = sha512::extend_hash(hash, secret.len(), appended_str);
 
         let mut concatenation = Vec::<u8>::new();

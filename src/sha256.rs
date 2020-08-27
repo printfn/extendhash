@@ -92,7 +92,7 @@ impl SHA256 {
 }
 
 impl Hash<[u8; 32]> for SHA256 {
-    fn apply_chunk(self, chunk: &[u8]) -> SHA256 {
+    fn apply_chunk(self, chunk: &[u8]) -> Self {
         assert_eq!(chunk.len(), 64);
 
         let mut w = [0_u32; 64];
@@ -138,7 +138,7 @@ impl Hash<[u8; 32]> for SHA256 {
             h[0] = temp1.wrapping_add(temp2);
         }
 
-        SHA256 {
+        Self {
             h: [
                 self.h[0].wrapping_add(h[0]),
                 self.h[1].wrapping_add(h[1]),
@@ -181,8 +181,8 @@ impl Hash<[u8; 32]> for SHA256 {
 }
 
 impl Default for SHA256 {
-    fn default() -> SHA256 {
-        SHA256 {
+    fn default() -> Self {
+        Self {
             h: [
                 0x6a09_e667,
                 0xbb67_ae85,
@@ -198,8 +198,8 @@ impl Default for SHA256 {
 }
 
 impl From<[u8; 32]> for SHA256 {
-    fn from(hash: [u8; 32]) -> SHA256 {
-        SHA256 {
+    fn from(hash: [u8; 32]) -> Self {
+        Self {
             h: [
                 u32::from_be_bytes([hash[0], hash[1], hash[2], hash[3]]),
                 u32::from_be_bytes([hash[4], hash[5], hash[6], hash[7]]),
@@ -400,7 +400,7 @@ mod tests {
     #[test]
     fn a_test() {
         assert_eq!(
-            sha256::compute_hash("a".as_bytes()),
+            sha256::compute_hash(b"a"),
             [
                 0xca, 0x97, 0x81, 0x12, 0xca, 0x1b, 0xbd, 0xca, 0xfa, 0xc2, 0x31, 0xb3, 0x9a, 0x23,
                 0xdc, 0x4d, 0xa7, 0x86, 0xef, 0xf8, 0x14, 0x7c, 0x4e, 0x72, 0xb9, 0x80, 0x77, 0x85,
@@ -411,9 +411,9 @@ mod tests {
 
     #[test]
     fn quick_brown_fox_test() {
-        let s = "The quick brown fox jumps over the lazy dog";
+        let s = b"The quick brown fox jumps over the lazy dog";
         assert_eq!(
-            sha256::compute_hash(s.as_bytes()),
+            sha256::compute_hash(s),
             [
                 0xd7, 0xa8, 0xfb, 0xb3, 0x07, 0xd7, 0x80, 0x94, 0x69, 0xca, 0x9a, 0xbc, 0xb0, 0x08,
                 0x2e, 0x4f, 0x8d, 0x56, 0x51, 0xe4, 0x6d, 0x3c, 0xdb, 0x76, 0x2d, 0x02, 0xd0, 0xbf,
@@ -424,9 +424,9 @@ mod tests {
 
     #[test]
     fn quick_brown_fox_test_2() {
-        let s = "The quick brown fox jumps over the lazy cog";
+        let s = b"The quick brown fox jumps over the lazy cog";
         assert_eq!(
-            sha256::compute_hash(s.as_bytes()),
+            sha256::compute_hash(s),
             [
                 0xe4, 0xc4, 0xd8, 0xf3, 0xbf, 0x76, 0xb6, 0x92, 0xde, 0x79, 0x1a, 0x17, 0x3e, 0x05,
                 0x32, 0x11, 0x50, 0xf7, 0xa3, 0x45, 0xb4, 0x64, 0x84, 0xfe, 0x42, 0x7f, 0x6a, 0xcc,
@@ -437,10 +437,10 @@ mod tests {
 
     #[test]
     fn abc_test() {
-        let s = "ABCDEFGHIJKLMNOPQRSTUVWXYZ\
-                 abcdefghijklmnopqrstuvwxyz0123456789";
+        let s = b"ABCDEFGHIJKLMNOPQRSTUVWXYZ\
+                  abcdefghijklmnopqrstuvwxyz0123456789";
         assert_eq!(
-            sha256::compute_hash(s.as_bytes()),
+            sha256::compute_hash(s),
             [
                 0xdb, 0x4b, 0xfc, 0xbd, 0x4d, 0xa0, 0xcd, 0x85, 0xa6, 0x0c, 0x3c, 0x37, 0xd3, 0xfb,
                 0xd8, 0x80, 0x5c, 0x77, 0xf1, 0x5f, 0xc6, 0xb1, 0xfd, 0xfe, 0x61, 0x4e, 0xe0, 0xa7,
@@ -452,7 +452,7 @@ mod tests {
     #[test]
     fn long_test() {
         assert_eq!(
-            sha256::compute_hash(&[b'a'; 1_000_000]),
+            sha256::compute_hash(&*alloc::vec![b'a'; 1_000_000].into_boxed_slice()),
             [
                 0xcd, 0xc7, 0x6e, 0x5c, 0x99, 0x14, 0xfb, 0x92, 0x81, 0xa1, 0xc7, 0xe2, 0x84, 0xd7,
                 0x3e, 0x67, 0xf1, 0x80, 0x9a, 0x48, 0xa4, 0x97, 0x20, 0x0e, 0x04, 0x6d, 0x39, 0xcc,
@@ -478,17 +478,16 @@ mod tests {
         assert_eq!(sha256::padding_length_for_input_length(63), 64 + 1);
         assert_eq!(sha256::padding_length_for_input_length(64), 64);
         assert_eq!(sha256::padding_length_for_input_length(128), 64);
-        assert_eq!(sha256::padding_length_for_input_length(64 * 100000), 64);
+        assert_eq!(sha256::padding_length_for_input_length(64 * 100_000), 64);
     }
 
     #[test]
     fn test_hash_ext() {
-        let secret = "count=10&lat=37.351&user_id=1&\
-                      long=-119.827&waffle=eggo"
-            .as_bytes();
+        let secret = b"count=10&lat=37.351&user_id=1&\
+                       long=-119.827&waffle=eggo";
         let hash = sha256::compute_hash(secret);
 
-        let appended_str = "&waffle=liege".as_bytes();
+        let appended_str = b"&waffle=liege";
         let combined_hash = sha256::extend_hash(hash, secret.len(), appended_str);
 
         let mut concatenation = Vec::<u8>::new();

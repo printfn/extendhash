@@ -98,7 +98,7 @@ impl MD5 {
 }
 
 impl Hash<[u8; 16]> for MD5 {
-    fn apply_chunk(self, chunk: &[u8]) -> MD5 {
+    fn apply_chunk(self, chunk: &[u8]) -> Self {
         assert_eq!(chunk.len(), 64);
 
         let mut h = self.h;
@@ -130,7 +130,7 @@ impl Hash<[u8; 16]> for MD5 {
             h[1] = h[1].wrapping_add(f.rotate_left(Self::S[i]));
         }
 
-        MD5 {
+        Self {
             h: [
                 self.h[0].wrapping_add(h[0]),
                 self.h[1].wrapping_add(h[1]),
@@ -163,16 +163,16 @@ impl Hash<[u8; 16]> for MD5 {
 }
 
 impl Default for MD5 {
-    fn default() -> MD5 {
-        MD5 {
+    fn default() -> Self {
+        Self {
             h: [0x6745_2301, 0xefcd_ab89, 0x98ba_dcfe, 0x1032_5476],
         }
     }
 }
 
 impl From<[u8; 16]> for MD5 {
-    fn from(hash: [u8; 16]) -> MD5 {
-        MD5 {
+    fn from(hash: [u8; 16]) -> Self {
+        Self {
             h: [
                 u32::from_le_bytes([hash[0], hash[1], hash[2], hash[3]]),
                 u32::from_le_bytes([hash[4], hash[5], hash[6], hash[7]]),
@@ -363,7 +363,7 @@ mod tests {
     #[test]
     fn a_test() {
         assert_eq!(
-            md5::compute_hash("a".as_bytes()),
+            md5::compute_hash(b"a"),
             [
                 0x0c, 0xc1, 0x75, 0xb9, 0xc0, 0xf1, 0xb6, 0xa8, 0x31, 0xc3, 0x99, 0xe2, 0x69, 0x77,
                 0x26, 0x61
@@ -373,9 +373,9 @@ mod tests {
 
     #[test]
     fn quick_brown_fox_test() {
-        let s = "The quick brown fox jumps over the lazy dog";
+        let s = b"The quick brown fox jumps over the lazy dog";
         assert_eq!(
-            md5::compute_hash(s.as_bytes()),
+            md5::compute_hash(s),
             [
                 0x9e, 0x10, 0x7d, 0x9d, 0x37, 0x2b, 0xb6, 0x82, 0x6b, 0xd8, 0x1d, 0x35, 0x42, 0xa4,
                 0x19, 0xd6
@@ -385,9 +385,9 @@ mod tests {
 
     #[test]
     fn quick_brown_fox_test_2() {
-        let s = "The quick brown fox jumps over the lazy dog.";
+        let s = b"The quick brown fox jumps over the lazy dog.";
         assert_eq!(
-            md5::compute_hash(s.as_bytes()),
+            md5::compute_hash(s),
             [
                 0xe4, 0xd9, 0x09, 0xc2, 0x90, 0xd0, 0xfb, 0x1c, 0xa0, 0x68, 0xff, 0xad, 0xdf, 0x22,
                 0xcb, 0xd0
@@ -397,10 +397,10 @@ mod tests {
 
     #[test]
     fn abc_test() {
-        let s = "ABCDEFGHIJKLMNOPQRSTUVWXYZ\
+        let s = b"ABCDEFGHIJKLMNOPQRSTUVWXYZ\
                  abcdefghijklmnopqrstuvwxyz0123456789";
         assert_eq!(
-            md5::compute_hash(s.as_bytes()),
+            md5::compute_hash(s),
             [
                 0xd1, 0x74, 0xab, 0x98, 0xd2, 0x77, 0xd9, 0xf5, 0xa5, 0x61, 0x1c, 0x2c, 0x9f, 0x41,
                 0x9d, 0x9f
@@ -411,7 +411,7 @@ mod tests {
     #[test]
     fn long_test() {
         assert_eq!(
-            md5::compute_hash(&[b'a'; 1_000_000]),
+            md5::compute_hash(&*alloc::vec![b'a'; 1_000_000].into_boxed_slice()),
             [
                 0x77, 0x07, 0xd6, 0xae, 0x4e, 0x02, 0x7c, 0x70, 0xee, 0xa2, 0xa9, 0x35, 0xc2, 0x29,
                 0x6f, 0x21
@@ -436,17 +436,16 @@ mod tests {
         assert_eq!(md5::padding_length_for_input_length(63), 64 + 1);
         assert_eq!(md5::padding_length_for_input_length(64), 64);
         assert_eq!(md5::padding_length_for_input_length(128), 64);
-        assert_eq!(md5::padding_length_for_input_length(64 * 100000), 64);
+        assert_eq!(md5::padding_length_for_input_length(64 * 100_000), 64);
     }
 
     #[test]
     fn test_hash_ext_unknown_length() {
-        let secret = "count=10&lat=37.351&user_id=1\
-                      &long=-119.827&waffle=eggo"
-            .as_bytes();
+        let secret = b"count=10&lat=37.351&user_id=1\
+                       &long=-119.827&waffle=eggo";
         let hash = md5::compute_hash(secret);
 
-        let appended_str = "&waffle=liege".as_bytes();
+        let appended_str = b"&waffle=liege";
         let target_hash = [
             0xf2, 0xf0, 0x69, 0x64, 0xeb, 0xbf, 0xc3, 0xdb, 0xa5, 0xe1, 0xfb, 0xfe, 0x35, 0x08,
             0x21, 0x49,
