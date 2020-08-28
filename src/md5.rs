@@ -1,4 +1,3 @@
-use crate::hash::Hash;
 use alloc::vec::Vec;
 use core::iter;
 
@@ -95,21 +94,19 @@ impl MD5 {
             .chain(iter::once(len_as_bytes[6]))
             .chain(iter::once(len_as_bytes[7]))
     }
-}
 
-impl Hash<[u8; 16]> for MD5 {
-    fn apply_chunk(self, chunk: &[u8]) -> Self {
-        assert_eq!(chunk.len(), 64);
+    const fn apply_chunk(self, chunk: &[u8]) -> Self {
+        // chunk.len() must be 64
 
         let mut h = self.h;
 
-        for i in 0_usize..64 {
+        let mut i = 0;
+        while i < chunk.len() {
             let (mut f, g) = match i {
                 0..=15 => ((h[1] & h[2]) | ((!h[1]) & h[3]), i),
                 16..=31 => ((h[3] & h[1]) | ((!h[3]) & h[2]), (5 * i + 1) % 16),
                 32..=47 => (h[1] ^ h[2] ^ h[3], (3 * i + 5) % 16),
-                48..=63 => (h[2] ^ (h[1] | (!h[3])), (7 * i) % 16),
-                _ => unreachable!(),
+                _ => (h[2] ^ (h[1] | (!h[3])), (7 * i) % 16),
             };
 
             let slice = [
@@ -128,6 +125,8 @@ impl Hash<[u8; 16]> for MD5 {
             h[3] = h[2];
             h[2] = h[1];
             h[1] = h[1].wrapping_add(f.rotate_left(Self::S[i]));
+
+            i += 1;
         }
 
         Self {
@@ -140,7 +139,7 @@ impl Hash<[u8; 16]> for MD5 {
         }
     }
 
-    fn hash_from_data(self) -> [u8; 16] {
+    const fn hash_from_data(self) -> [u8; 16] {
         let h = [
             self.h[0].to_le_bytes(),
             self.h[1].to_le_bytes(),
@@ -153,25 +152,21 @@ impl Hash<[u8; 16]> for MD5 {
         ]
     }
 
-    fn padding_length_for_input_length(input_length: usize) -> usize {
+    const fn padding_length_for_input_length(input_length: usize) -> usize {
         if input_length % 64 <= 55 {
             64 - input_length % 64
         } else {
             128 - input_length % 64
         }
     }
-}
 
-impl Default for MD5 {
-    fn default() -> Self {
+    const fn new() -> Self {
         Self {
             h: [0x6745_2301, 0xefcd_ab89, 0x98ba_dcfe, 0x1032_5476],
         }
     }
-}
 
-impl From<[u8; 16]> for MD5 {
-    fn from(hash: [u8; 16]) -> Self {
+    const fn from(hash: [u8; 16]) -> Self {
         Self {
             h: [
                 u32::from_le_bytes([hash[0], hash[1], hash[2], hash[3]]),
@@ -245,7 +240,7 @@ pub fn padding_for_length(input_length: usize) -> Vec<u8> {
 /// assert_eq!(data.len() + padding_length, 64);
 /// ```
 #[must_use]
-pub fn padding_length_for_input_length(input_length: usize) -> usize {
+pub const fn padding_length_for_input_length(input_length: usize) -> usize {
     MD5::padding_length_for_input_length(input_length)
 }
 
@@ -281,7 +276,7 @@ pub fn compute_hash(input: &[u8]) -> [u8; 16] {
     assert_eq!(data.len() % 64, 0);
 
     data.chunks_exact(64)
-        .fold(MD5::default(), |md5, chunk| md5.apply_chunk(chunk))
+        .fold(MD5::new(), |md5, chunk| md5.apply_chunk(chunk))
         .hash_from_data()
 }
 
