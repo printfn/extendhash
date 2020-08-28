@@ -1,4 +1,3 @@
-use crate::hash::Hash;
 use alloc::vec::Vec;
 use core::iter;
 
@@ -89,9 +88,7 @@ impl SHA256 {
             .chain(iter::once(len_as_bytes[6]))
             .chain(iter::once(len_as_bytes[7]))
     }
-}
 
-impl Hash<[u8; 32]> for SHA256 {
     fn apply_chunk(self, chunk: &[u8]) -> Self {
         assert_eq!(chunk.len(), 64);
 
@@ -152,7 +149,7 @@ impl Hash<[u8; 32]> for SHA256 {
         }
     }
 
-    fn hash_from_data(self) -> [u8; 32] {
+    const fn hash_from_data(self) -> [u8; 32] {
         let h = [
             self.h[0].to_be_bytes(),
             self.h[1].to_be_bytes(),
@@ -171,17 +168,15 @@ impl Hash<[u8; 32]> for SHA256 {
         ]
     }
 
-    fn padding_length_for_input_length(input_length: usize) -> usize {
+    const fn padding_length_for_input_length(input_length: usize) -> usize {
         if input_length % 64 <= 55 {
             64 - input_length % 64
         } else {
             128 - input_length % 64
         }
     }
-}
 
-impl Default for SHA256 {
-    fn default() -> Self {
+    const fn new() -> Self {
         Self {
             h: [
                 0x6a09_e667,
@@ -276,7 +271,7 @@ pub fn padding_for_length(input_length: usize) -> Vec<u8> {
 /// assert_eq!(data.len() + padding_length, 64);
 /// ```
 #[must_use]
-pub fn padding_length_for_input_length(input_length: usize) -> usize {
+pub const fn padding_length_for_input_length(input_length: usize) -> usize {
     SHA256::padding_length_for_input_length(input_length)
 }
 
@@ -314,7 +309,7 @@ pub fn compute_hash(input: &[u8]) -> [u8; 32] {
     assert_eq!(data.len() % 64, 0);
 
     data.chunks_exact(64)
-        .fold(SHA256::default(), |sha256, chunk| sha256.apply_chunk(chunk))
+        .fold(SHA256::new(), |sha256, chunk| sha256.apply_chunk(chunk))
         .hash_from_data()
 }
 

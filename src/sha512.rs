@@ -1,4 +1,3 @@
-use crate::hash::Hash;
 use alloc::vec::Vec;
 use core::iter;
 
@@ -113,9 +112,7 @@ impl SHA512 {
             .chain(iter::once(len_as_bytes[14]))
             .chain(iter::once(len_as_bytes[15]))
     }
-}
 
-impl Hash<[u8; 64]> for SHA512 {
     fn apply_chunk(self, chunk: &[u8]) -> Self {
         assert_eq!(chunk.len(), 128);
 
@@ -180,7 +177,7 @@ impl Hash<[u8; 64]> for SHA512 {
         }
     }
 
-    fn hash_from_data(self) -> [u8; 64] {
+    const fn hash_from_data(self) -> [u8; 64] {
         let h = [
             self.h[0].to_be_bytes(),
             self.h[1].to_be_bytes(),
@@ -203,17 +200,15 @@ impl Hash<[u8; 64]> for SHA512 {
         ]
     }
 
-    fn padding_length_for_input_length(input_length: usize) -> usize {
+    const fn padding_length_for_input_length(input_length: usize) -> usize {
         if input_length % 128 <= 111 {
             128 - input_length % 128
         } else {
             256 - input_length % 128
         }
     }
-}
 
-impl Default for SHA512 {
-    fn default() -> Self {
+    const fn new() -> Self {
         Self {
             h: [
                 0x6a09_e667_f3bc_c908,
@@ -227,10 +222,8 @@ impl Default for SHA512 {
             ],
         }
     }
-}
 
-impl From<[u8; 64]> for SHA512 {
-    fn from(hash: [u8; 64]) -> Self {
+    const fn from(hash: [u8; 64]) -> Self {
         Self {
             h: [
                 u64::from_be_bytes([
@@ -324,7 +317,7 @@ pub fn padding_for_length(input_length: usize) -> Vec<u8> {
 /// assert_eq!(data.len() + padding_length, 128);
 /// ```
 #[must_use]
-pub fn padding_length_for_input_length(input_length: usize) -> usize {
+pub const fn padding_length_for_input_length(input_length: usize) -> usize {
     SHA512::padding_length_for_input_length(input_length)
 }
 
@@ -366,7 +359,7 @@ pub fn compute_hash(input: &[u8]) -> [u8; 64] {
     assert_eq!(data.len() % 128, 0);
 
     data.chunks_exact(128)
-        .fold(SHA512::default(), |sha512, chunk| sha512.apply_chunk(chunk))
+        .fold(SHA512::new(), |sha512, chunk| sha512.apply_chunk(chunk))
         .hash_from_data()
 }
 

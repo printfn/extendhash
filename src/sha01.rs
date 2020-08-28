@@ -14,50 +14,59 @@ pub enum HashType {
 }
 
 impl SHA1 {
-    fn apply_chunk(self, chunk: &[u8], hash_type: HashType) -> Self {
-        assert_eq!(chunk.len(), 64);
-
+    // chunk must have a length of 64
+    const fn apply_chunk(self, chunk: &[u8], hash_type: HashType) -> Self {
         let mut w = [0_u32; 80];
-        for i in 0..80 {
-            if i < 16 {
-                w[i] = u32::from_be_bytes([
-                    chunk[4 * i],
-                    chunk[4 * i + 1],
-                    chunk[4 * i + 2],
-                    chunk[4 * i + 3],
-                ]);
-            } else {
-                let rotate_amount = match hash_type {
-                    HashType::SHA0 => 0,
-                    HashType::SHA1 => 1,
-                };
-                w[i] = (w[i - 3] ^ w[i - 8] ^ w[i - 14] ^ w[i - 16]).rotate_left(rotate_amount);
+        {
+            let mut i = 0;
+            while i < 80 {
+                if i < 16 {
+                    w[i] = u32::from_be_bytes([
+                        chunk[4 * i],
+                        chunk[4 * i + 1],
+                        chunk[4 * i + 2],
+                        chunk[4 * i + 3],
+                    ]);
+                } else {
+                    let rotate_amount = match hash_type {
+                        HashType::SHA0 => 0,
+                        HashType::SHA1 => 1,
+                    };
+                    w[i] = (w[i - 3] ^ w[i - 8] ^ w[i - 14] ^ w[i - 16]).rotate_left(rotate_amount);
+                }
+                i += 1;
             }
         }
 
         let mut h = self.h;
 
-        for (i, &current_w) in w.iter().enumerate() {
-            let (f, k) = match i {
-                0..=19 => ((h[1] & h[2]) | ((!h[1]) & h[3]), 0x5a82_7999),
-                20..=39 => (h[1] ^ h[2] ^ h[3], 0x6ed9_eba1),
-                40..=59 => ((h[1] & h[2]) | (h[1] & h[3]) | (h[2] & h[3]), 0x8f1b_bcdc),
-                60..=79 => (h[1] ^ h[2] ^ h[3], 0xca62_c1d6),
-                _ => unreachable!(),
-            };
+        {
+            let mut i = 0;
+            while i < 80 {
+                let current_w = w[i];
 
-            let temp = h[0]
-                .rotate_left(5)
-                .wrapping_add(f)
-                .wrapping_add(h[4])
-                .wrapping_add(k)
-                .wrapping_add(current_w);
+                let (f, k) = match i {
+                    0..=19 => ((h[1] & h[2]) | ((!h[1]) & h[3]), 0x5a82_7999),
+                    20..=39 => (h[1] ^ h[2] ^ h[3], 0x6ed9_eba1),
+                    40..=59 => ((h[1] & h[2]) | (h[1] & h[3]) | (h[2] & h[3]), 0x8f1b_bcdc),
+                    _ => (h[1] ^ h[2] ^ h[3], 0xca62_c1d6),
+                };
 
-            h[4] = h[3];
-            h[3] = h[2];
-            h[2] = h[1].rotate_left(30);
-            h[1] = h[0];
-            h[0] = temp;
+                let temp = h[0]
+                    .rotate_left(5)
+                    .wrapping_add(f)
+                    .wrapping_add(h[4])
+                    .wrapping_add(k)
+                    .wrapping_add(current_w);
+
+                h[4] = h[3];
+                h[3] = h[2];
+                h[2] = h[1].rotate_left(30);
+                h[1] = h[0];
+                h[0] = temp;
+
+                i += 1;
+            }
         }
 
         Self {
@@ -108,10 +117,8 @@ impl SHA1 {
             128 - input_length % 64
         }
     }
-}
 
-impl Default for SHA1 {
-    fn default() -> Self {
+    const fn new() -> Self {
         Self {
             h: [
                 0x6745_2301,
@@ -122,10 +129,8 @@ impl Default for SHA1 {
             ],
         }
     }
-}
 
-impl From<[u8; 20]> for SHA1 {
-    fn from(hash: [u8; 20]) -> Self {
+    const fn from(hash: [u8; 20]) -> Self {
         Self {
             h: [
                 u32::from_be_bytes([hash[0], hash[1], hash[2], hash[3]]),
@@ -194,7 +199,7 @@ pub fn compute_hash(input: &[u8], hash_type: HashType) -> [u8; 20] {
     assert_eq!(data.len() % 64, 0);
 
     data.chunks_exact(64)
-        .fold(SHA1::default(), |sha1, chunk| {
+        .fold(SHA1::new(), |sha1, chunk| {
             sha1.apply_chunk(chunk, hash_type)
         })
         .hash_from_data()

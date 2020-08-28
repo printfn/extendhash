@@ -95,9 +95,8 @@ impl MD5 {
             .chain(iter::once(len_as_bytes[7]))
     }
 
+    // chunk must have a length of 64
     const fn apply_chunk(self, chunk: &[u8]) -> Self {
-        // chunk.len() must be 64
-
         let mut h = self.h;
 
         let mut i = 0;
