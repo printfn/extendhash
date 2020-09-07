@@ -86,7 +86,7 @@ impl SHA256 {
         }
     }
 
-    const fn apply_chunk(self, chunk: &[u8]) -> Self {
+    const fn apply_chunk(self, chunk: [u8; 64]) -> Self {
         let mut w = [0_u32; 64];
         {
             let mut i = 0;
@@ -150,6 +150,31 @@ impl SHA256 {
                 self.h[7].wrapping_add(h[7]),
             ],
         }
+    }
+
+    const fn get_num_chunks(data_length: usize) -> usize {
+        (data_length + Self::padding_length_for_input_length(data_length)) / 64
+    }
+
+    const fn get_chunk(data: &[u8], data_len: usize, chunk_idx: usize) -> [u8; 64] {
+        let mut chunk = [0; 64];
+        let mut i = 0;
+        while i < 64 {
+            if chunk_idx * 64 + i < data.len() {
+                chunk[i] = data[chunk_idx * 64 + i];
+            } else {
+                let padding_len = Self::padding_length_for_input_length(data_len);
+                let index_into_padding = chunk_idx * 64 + i - data.len();
+                if index_into_padding < padding_len {
+                    chunk[i] = Self::padding_value_at_idx(data_len, index_into_padding);
+                } else {
+                    // error
+                    let _ = chunk[i + 100000];
+                }
+            }
+            i += 1;
+        }
+        chunk
     }
 
     const fn hash_from_data(self) -> [u8; 32] {
@@ -305,18 +330,16 @@ pub const fn padding_length_for_input_length(input_length: usize) -> usize {
 ///     0x4b, 0x1f, 0xb6, 0x94, 0x21, 0x85, 0x99, 0x93]);
 /// ```
 #[must_use]
-pub fn compute_hash(input: &[u8]) -> [u8; 32] {
-    let data: Vec<u8> = input
-        .iter()
-        .copied()
-        .chain(padding_for_length(input.len()))
-        .collect();
-
-    assert_eq!(data.len() % 64, 0);
-
-    data.chunks_exact(64)
-        .fold(SHA256::new(), |sha256, chunk| sha256.apply_chunk(chunk))
-        .hash_from_data()
+pub const fn compute_hash(input: &[u8]) -> [u8; 32] {
+    let num_chunks = SHA256::get_num_chunks(input.len());
+    let mut sha256 = SHA256::new();
+    let mut i = 0;
+    while i < num_chunks {
+        let chunk = SHA256::get_chunk(input, input.len(), i);
+        sha256 = sha256.apply_chunk(chunk);
+        i += 1;
+    }
+    sha256.hash_from_data()
 }
 
 /// Calculate a SHA-256 hash extension.
@@ -363,22 +386,17 @@ pub fn compute_hash(input: &[u8]) -> [u8; 32] {
 ///     sha256::compute_hash(combined_data.as_slice()));
 /// ```
 #[must_use]
-pub fn extend_hash(hash: [u8; 32], length: usize, additional_input: &[u8]) -> [u8; 32] {
+pub const fn extend_hash(hash: [u8; 32], length: usize, additional_input: &[u8]) -> [u8; 32] {
     let len = length + padding_length_for_input_length(length) + additional_input.len();
-
-    let data: Vec<u8> = additional_input
-        .iter()
-        .copied()
-        .chain(padding_for_length(len))
-        .collect();
-
-    assert_eq!(data.len() % 64, 0);
-
-    data.chunks_exact(64)
-        .fold(SHA256::from(hash), |sha256, chunk| {
-            sha256.apply_chunk(chunk)
-        })
-        .hash_from_data()
+    let num_chunks = (additional_input.len() + padding_length_for_input_length(len)) / 64;
+    let mut sha256 = SHA256::from(hash);
+    let mut i = 0;
+    while i < num_chunks {
+        let chunk = SHA256::get_chunk(additional_input, len, i);
+        sha256 = sha256.apply_chunk(chunk);
+        i += 1;
+    }
+    sha256.hash_from_data()
 }
 
 #[cfg(test)]
