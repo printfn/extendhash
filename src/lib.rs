@@ -36,7 +36,7 @@
 //!     sha256::compute_hash(combined_data.as_slice()));
 //! ```
 
-#![doc(html_root_url = "https://docs.rs/extendhash/1.0.8")]
+#![doc(html_root_url = "https://docs.rs/extendhash/1.0.9")]
 #![no_std]
 
 extern crate alloc;
