@@ -102,35 +102,39 @@ impl SHA512 {
         }
     }
 
-    fn apply_chunk(self, chunk: &[u8]) -> Self {
-        assert_eq!(chunk.len(), 128);
-
+    const fn apply_chunk(self, chunk: &[u8]) -> Self {
         let mut w = [0_u64; 80];
-        for i in 0..80 {
-            if i < 16 {
-                w[i] = u64::from_be_bytes([
-                    chunk[8 * i],
-                    chunk[8 * i + 1],
-                    chunk[8 * i + 2],
-                    chunk[8 * i + 3],
-                    chunk[8 * i + 4],
-                    chunk[8 * i + 5],
-                    chunk[8 * i + 6],
-                    chunk[8 * i + 7],
-                ]);
-            } else {
-                let s0 = w[i - 15].rotate_right(1) ^ w[i - 15].rotate_right(8) ^ (w[i - 15] >> 7);
-                let s1 = w[i - 2].rotate_right(19) ^ w[i - 2].rotate_right(61) ^ (w[i - 2] >> 6);
-                w[i] = w[i - 16]
-                    .wrapping_add(s0)
-                    .wrapping_add(w[i - 7])
-                    .wrapping_add(s1);
+        {
+            let mut i = 0;
+            while i < 80 {
+                if i < 16 {
+                    w[i] = u64::from_be_bytes([
+                        chunk[8 * i],
+                        chunk[8 * i + 1],
+                        chunk[8 * i + 2],
+                        chunk[8 * i + 3],
+                        chunk[8 * i + 4],
+                        chunk[8 * i + 5],
+                        chunk[8 * i + 6],
+                        chunk[8 * i + 7],
+                    ]);
+                } else {
+                    let s0 = w[i - 15].rotate_right(1) ^ w[i - 15].rotate_right(8) ^ (w[i - 15] >> 7);
+                    let s1 = w[i - 2].rotate_right(19) ^ w[i - 2].rotate_right(61) ^ (w[i - 2] >> 6);
+                    w[i] = w[i - 16]
+                        .wrapping_add(s0)
+                        .wrapping_add(w[i - 7])
+                        .wrapping_add(s1);
+                }
+                i += 1;
             }
         }
 
         let mut h = self.h;
 
-        for (i, &current_w) in w.iter().enumerate() {
+        let mut i = 0;
+        while i < 80 {
+            let current_w = w[i];
             let s1 = h[4].rotate_right(14) ^ h[4].rotate_right(18) ^ h[4].rotate_right(41);
             let ch = (h[4] & h[5]) ^ ((!h[4]) & h[6]);
             let temp1 = h[7]
@@ -150,6 +154,8 @@ impl SHA512 {
             h[2] = h[1];
             h[1] = h[0];
             h[0] = temp1.wrapping_add(temp2);
+
+            i += 1;
         }
 
         Self {

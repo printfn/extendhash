@@ -86,31 +86,35 @@ impl SHA256 {
         }
     }
 
-    fn apply_chunk(self, chunk: &[u8]) -> Self {
-        assert_eq!(chunk.len(), 64);
-
+    const fn apply_chunk(self, chunk: &[u8]) -> Self {
         let mut w = [0_u32; 64];
-        for i in 0..64 {
-            if i < 16 {
-                w[i] = u32::from_be_bytes([
-                    chunk[4 * i],
-                    chunk[4 * i + 1],
-                    chunk[4 * i + 2],
-                    chunk[4 * i + 3],
-                ]);
-            } else {
-                let s0 = w[i - 15].rotate_right(7) ^ w[i - 15].rotate_right(18) ^ (w[i - 15] >> 3);
-                let s1 = w[i - 2].rotate_right(17) ^ w[i - 2].rotate_right(19) ^ (w[i - 2] >> 10);
-                w[i] = w[i - 16]
-                    .wrapping_add(s0)
-                    .wrapping_add(w[i - 7])
-                    .wrapping_add(s1);
+        {
+            let mut i = 0;
+            while i < 64 {
+                if i < 16 {
+                    w[i] = u32::from_be_bytes([
+                        chunk[4 * i],
+                        chunk[4 * i + 1],
+                        chunk[4 * i + 2],
+                        chunk[4 * i + 3],
+                    ]);
+                } else {
+                    let s0 = w[i - 15].rotate_right(7) ^ w[i - 15].rotate_right(18) ^ (w[i - 15] >> 3);
+                    let s1 = w[i - 2].rotate_right(17) ^ w[i - 2].rotate_right(19) ^ (w[i - 2] >> 10);
+                    w[i] = w[i - 16]
+                        .wrapping_add(s0)
+                        .wrapping_add(w[i - 7])
+                        .wrapping_add(s1);
+                }
+                i += 1;
             }
         }
 
         let mut h = self.h;
 
-        for (i, &current_w) in w.iter().enumerate() {
+        let mut i = 0;
+        while i < 64 {
+            let current_w = w[i];
             let s1 = h[4].rotate_right(6) ^ h[4].rotate_right(11) ^ h[4].rotate_right(25);
             let ch = (h[4] & h[5]) ^ ((!h[4]) & h[6]);
             let temp1 = h[7]
@@ -130,6 +134,8 @@ impl SHA256 {
             h[2] = h[1];
             h[1] = h[0];
             h[0] = temp1.wrapping_add(temp2);
+
+            i += 1;
         }
 
         Self {
@@ -187,10 +193,8 @@ impl SHA256 {
             ],
         }
     }
-}
 
-impl From<[u8; 32]> for SHA256 {
-    fn from(hash: [u8; 32]) -> Self {
+    const fn from(hash: [u8; 32]) -> Self {
         Self {
             h: [
                 u32::from_be_bytes([hash[0], hash[1], hash[2], hash[3]]),
