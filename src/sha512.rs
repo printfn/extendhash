@@ -1,5 +1,4 @@
 use alloc::vec::Vec;
-use core::iter;
 
 #[derive(Copy, Clone)]
 struct SHA512 {
@@ -90,27 +89,17 @@ impl SHA512 {
         0x6c44_198c_4a47_5817,
     ];
 
-    fn padding_for_length(input_length: usize) -> impl Iterator<Item = u8> {
-        let len_as_bytes = (input_length as u128).wrapping_mul(8).to_be_bytes();
-
-        iter::once(0b1000_0000)
-            .chain(iter::repeat(0).take(Self::padding_length_for_input_length(input_length) - 17))
-            .chain(iter::once(len_as_bytes[0]))
-            .chain(iter::once(len_as_bytes[1]))
-            .chain(iter::once(len_as_bytes[2]))
-            .chain(iter::once(len_as_bytes[3]))
-            .chain(iter::once(len_as_bytes[4]))
-            .chain(iter::once(len_as_bytes[5]))
-            .chain(iter::once(len_as_bytes[6]))
-            .chain(iter::once(len_as_bytes[7]))
-            .chain(iter::once(len_as_bytes[8]))
-            .chain(iter::once(len_as_bytes[9]))
-            .chain(iter::once(len_as_bytes[10]))
-            .chain(iter::once(len_as_bytes[11]))
-            .chain(iter::once(len_as_bytes[12]))
-            .chain(iter::once(len_as_bytes[13]))
-            .chain(iter::once(len_as_bytes[14]))
-            .chain(iter::once(len_as_bytes[15]))
+    const fn padding_value_at_idx(input_length: usize, idx: usize) -> u8 {
+        let padding_length = Self::padding_length_for_input_length(input_length);
+        if idx == 0 {
+            0b1000_0000
+        } else if idx <= padding_length - 17 {
+            0
+        } else {
+            let offset = idx + 16 - padding_length;
+            let bytes = (input_length as u128).wrapping_mul(8).to_be_bytes();
+            bytes[offset]
+        }
     }
 
     fn apply_chunk(self, chunk: &[u8]) -> Self {
@@ -288,7 +277,12 @@ impl SHA512 {
 /// ```
 #[must_use]
 pub fn padding_for_length(input_length: usize) -> Vec<u8> {
-    SHA512::padding_for_length(input_length).collect()
+    let padding_length = padding_length_for_input_length(input_length);
+    let mut result = Vec::with_capacity(padding_length);
+    for i in 0..padding_length {
+        result.push(SHA512::padding_value_at_idx(input_length, i));
+    }
+    result
 }
 
 /// Compute the SHA-512 padding length (in bytes) for the given
@@ -353,7 +347,7 @@ pub fn compute_hash(input: &[u8]) -> [u8; 64] {
     let data: Vec<u8> = input
         .iter()
         .copied()
-        .chain(SHA512::padding_for_length(input.len()))
+        .chain(padding_for_length(input.len()))
         .collect();
 
     assert_eq!(data.len() % 128, 0);
@@ -413,7 +407,7 @@ pub fn extend_hash(hash: [u8; 64], length: usize, additional_input: &[u8]) -> [u
     let data: Vec<u8> = additional_input
         .iter()
         .copied()
-        .chain(SHA512::padding_for_length(len))
+        .chain(padding_for_length(len))
         .collect();
 
     assert_eq!(data.len() % 128, 0);

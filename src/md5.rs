@@ -233,7 +233,7 @@ impl MD5 {
 #[must_use]
 pub fn padding_for_length(input_length: usize) -> Vec<u8> {
     let padding_length = padding_length_for_input_length(input_length);
-    let mut result = alloc::vec::Vec::with_capacity(padding_length);
+    let mut result = Vec::with_capacity(padding_length);
     for i in 0..padding_length {
         result.push(MD5::padding_value_at_idx(input_length, i));
     }

@@ -1,6 +1,5 @@
 // This file contains shared code for SHA-0 and SHA-1.
 use alloc::vec::Vec;
-use core::iter;
 
 #[derive(Copy, Clone)]
 struct SHA1 {
@@ -95,19 +94,17 @@ impl SHA1 {
         ]
     }
 
-    fn padding_for_length(input_length: usize) -> impl Iterator<Item = u8> {
-        let len_as_bytes = (input_length as u64).wrapping_mul(8).to_be_bytes();
-
-        iter::once(0b1000_0000)
-            .chain(iter::repeat(0).take(Self::padding_length_for_input_length(input_length) - 9))
-            .chain(iter::once(len_as_bytes[0]))
-            .chain(iter::once(len_as_bytes[1]))
-            .chain(iter::once(len_as_bytes[2]))
-            .chain(iter::once(len_as_bytes[3]))
-            .chain(iter::once(len_as_bytes[4]))
-            .chain(iter::once(len_as_bytes[5]))
-            .chain(iter::once(len_as_bytes[6]))
-            .chain(iter::once(len_as_bytes[7]))
+    const fn padding_value_at_idx(input_length: usize, idx: usize) -> u8 {
+        let padding_length = Self::padding_length_for_input_length(input_length);
+        if idx == 0 {
+            0b1000_0000
+        } else if idx <= padding_length - 9 {
+            0
+        } else {
+            let offset = idx + 8 - padding_length;
+            let bytes = (input_length as u64).wrapping_mul(8).to_be_bytes();
+            bytes[offset]
+        }
     }
 
     const fn padding_length_for_input_length(input_length: usize) -> usize {
@@ -157,7 +154,12 @@ impl SHA1 {
 /// This padding has a length you can determine by calling
 /// `sha01::padding_length_for_input_length`.
 pub fn padding_for_length(input_length: usize) -> Vec<u8> {
-    SHA1::padding_for_length(input_length).collect()
+    let padding_length = padding_length_for_input_length(input_length);
+    let mut result = Vec::with_capacity(padding_length);
+    for i in 0..padding_length {
+        result.push(SHA1::padding_value_at_idx(input_length, i));
+    }
+    result
 }
 
 /// Compute the SHA-0/SHA-1 padding length (in bytes) for the given
@@ -193,7 +195,7 @@ pub fn compute_hash(input: &[u8], hash_type: HashType) -> [u8; 20] {
     let data: Vec<u8> = input
         .iter()
         .copied()
-        .chain(SHA1::padding_for_length(input.len()))
+        .chain(padding_for_length(input.len()))
         .collect();
 
     assert_eq!(data.len() % 64, 0);
@@ -232,7 +234,7 @@ pub fn extend_hash(
     let data: Vec<u8> = additional_input
         .iter()
         .copied()
-        .chain(SHA1::padding_for_length(len))
+        .chain(padding_for_length(len))
         .collect();
 
     assert_eq!(data.len() % 64, 0);
