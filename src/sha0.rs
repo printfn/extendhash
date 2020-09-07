@@ -89,7 +89,7 @@ pub const fn padding_length_for_input_length(input_length: usize) -> usize {
 ///     0xf7, 0xff, 0x08, 0x2c, 0x4d, 0x97, 0xf1, 0xed, 0xf8, 0x80]);
 /// ```
 #[must_use]
-pub fn compute_hash(input: &[u8]) -> [u8; 20] {
+pub const fn compute_hash(input: &[u8]) -> [u8; 20] {
     sha01::compute_hash(input, sha01::HashType::SHA0)
 }
 
@@ -137,7 +137,7 @@ pub fn compute_hash(input: &[u8]) -> [u8; 20] {
 ///     sha0::compute_hash(combined_data.as_slice()));
 /// ```
 #[must_use]
-pub fn extend_hash(hash: [u8; 20], length: usize, additional_input: &[u8]) -> [u8; 20] {
+pub const fn extend_hash(hash: [u8; 20], length: usize, additional_input: &[u8]) -> [u8; 20] {
     sha01::extend_hash(hash, length, additional_input, sha01::HashType::SHA0)
 }
 
