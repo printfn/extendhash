@@ -97,14 +97,21 @@ impl MD5 {
         (data_length + Self::padding_length_for_input_length(data_length)) / 64
     }
 
-    const fn get_chunk(data: &[u8], chunk_idx: usize) -> [u8; 64] {
+    const fn get_chunk(data: &[u8], data_len: usize, chunk_idx: usize) -> [u8; 64] {
         let mut chunk = [0; 64];
         let mut i = 0;
         while i < 64 {
             if chunk_idx * 64 + i < data.len() {
                 chunk[i] = data[chunk_idx * 64 + i];
             } else {
-                chunk[i] = Self::padding_value_at_idx(data.len(), chunk_idx * 64 + i - data.len());
+                let padding_len = Self::padding_length_for_input_length(data_len);
+                let index_into_padding = chunk_idx * 64 + i - data.len();
+                if index_into_padding < padding_len {
+                    chunk[i] = Self::padding_value_at_idx(data_len, index_into_padding);
+                } else {
+                    // error
+                    let _ = chunk[i + 100000];
+                }
             }
             i += 1;
         }
@@ -290,7 +297,7 @@ pub const fn compute_hash(input: &[u8]) -> [u8; 16] {
     let mut md5 = MD5::new();
     let mut i = 0;
     while i < num_chunks {
-        let chunk = MD5::get_chunk(input, i);
+        let chunk = MD5::get_chunk(input, input.len(), i);
         let slice: &[u8] = &chunk;
         md5 = md5.apply_chunk(slice);
         i += 1;
@@ -342,20 +349,18 @@ pub const fn compute_hash(input: &[u8]) -> [u8; 16] {
 ///     md5::compute_hash(combined_data.as_slice()));
 /// ```
 #[must_use]
-pub fn extend_hash(hash: [u8; 16], length: usize, additional_input: &[u8]) -> [u8; 16] {
+pub const fn extend_hash(hash: [u8; 16], length: usize, additional_input: &[u8]) -> [u8; 16] {
     let len = length + padding_length_for_input_length(length) + additional_input.len();
-
-    let data: Vec<u8> = additional_input
-        .iter()
-        .copied()
-        .chain(padding_for_length(len))
-        .collect();
-
-    assert_eq!(data.len() % 64, 0);
-
-    data.chunks_exact(64)
-        .fold(MD5::from(hash), |md5, chunk| md5.apply_chunk(chunk))
-        .hash_from_data()
+    let num_chunks = (additional_input.len() + padding_length_for_input_length(len)) / 64;
+    let mut md5 = MD5::from(hash);
+    let mut i = 0;
+    while i < num_chunks {
+        let chunk = MD5::get_chunk(additional_input, len, i);
+        let slice: &[u8] = &chunk;
+        md5 = md5.apply_chunk(slice);
+        i += 1;
+    }
+    md5.hash_from_data()
 }
 
 #[cfg(test)]
