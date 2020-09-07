@@ -118,8 +118,7 @@ impl MD5 {
         chunk
     }
 
-    // chunk must have a length of 64
-    const fn apply_chunk(self, chunk: &[u8]) -> Self {
+    const fn apply_chunk(self, chunk: [u8; 64]) -> Self {
         let mut h = self.h;
 
         let mut i = 0;
@@ -298,8 +297,7 @@ pub const fn compute_hash(input: &[u8]) -> [u8; 16] {
     let mut i = 0;
     while i < num_chunks {
         let chunk = MD5::get_chunk(input, input.len(), i);
-        let slice: &[u8] = &chunk;
-        md5 = md5.apply_chunk(slice);
+        md5 = md5.apply_chunk(chunk);
         i += 1;
     }
     md5.hash_from_data()
@@ -356,8 +354,7 @@ pub const fn extend_hash(hash: [u8; 16], length: usize, additional_input: &[u8])
     let mut i = 0;
     while i < num_chunks {
         let chunk = MD5::get_chunk(additional_input, len, i);
-        let slice: &[u8] = &chunk;
-        md5 = md5.apply_chunk(slice);
+        md5 = md5.apply_chunk(chunk);
         i += 1;
     }
     md5.hash_from_data()
