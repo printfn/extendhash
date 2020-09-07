@@ -14,7 +14,8 @@ Supported hash algorithms:
   * SHA-512
 
 It supports `#![no_std]`. All hash algorithms and hash extensions are
-implemented in `const fn`s and can therefore be used in constant values.
+implemented in constant functions (using `const fn`) and can therefore
+be used in constant values.
 
 ## Usage
 
