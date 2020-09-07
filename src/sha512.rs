@@ -102,7 +102,7 @@ impl SHA512 {
         }
     }
 
-    const fn apply_chunk(self, chunk: &[u8]) -> Self {
+    const fn apply_chunk(self, chunk: [u8; 128]) -> Self {
         let mut w = [0_u64; 80];
         {
             let mut i = 0;
@@ -193,6 +193,31 @@ impl SHA512 {
             h[6][6], h[6][7], h[7][0], h[7][1], h[7][2], h[7][3], h[7][4], h[7][5], h[7][6],
             h[7][7],
         ]
+    }
+
+    const fn get_num_chunks(data_length: usize) -> usize {
+        (data_length + Self::padding_length_for_input_length(data_length)) / 128
+    }
+
+    const fn get_chunk(data: &[u8], data_len: usize, chunk_idx: usize) -> [u8; 128] {
+        let mut chunk = [0; 128];
+        let mut i = 0;
+        while i < 128 {
+            if chunk_idx * 128 + i < data.len() {
+                chunk[i] = data[chunk_idx * 128 + i];
+            } else {
+                let padding_len = Self::padding_length_for_input_length(data_len);
+                let index_into_padding = chunk_idx * 128 + i - data.len();
+                if index_into_padding < padding_len {
+                    chunk[i] = Self::padding_value_at_idx(data_len, index_into_padding);
+                } else {
+                    // error
+                    let _ = chunk[i + 100000];
+                }
+            }
+            i += 1;
+        }
+        chunk
     }
 
     const fn padding_length_for_input_length(input_length: usize) -> usize {
@@ -349,18 +374,16 @@ pub const fn padding_length_for_input_length(input_length: usize) -> usize {
 ///     0x4b, 0xb8, 0xd8, 0x3b, 0xbf, 0x00, 0x94, 0xdb][..]);
 /// ```
 #[must_use]
-pub fn compute_hash(input: &[u8]) -> [u8; 64] {
-    let data: Vec<u8> = input
-        .iter()
-        .copied()
-        .chain(padding_for_length(input.len()))
-        .collect();
-
-    assert_eq!(data.len() % 128, 0);
-
-    data.chunks_exact(128)
-        .fold(SHA512::new(), |sha512, chunk| sha512.apply_chunk(chunk))
-        .hash_from_data()
+pub const fn compute_hash(input: &[u8]) -> [u8; 64] {
+    let num_chunks = SHA512::get_num_chunks(input.len());
+    let mut sha512 = SHA512::new();
+    let mut i = 0;
+    while i < num_chunks {
+        let chunk = SHA512::get_chunk(input, input.len(), i);
+        sha512 = sha512.apply_chunk(chunk);
+        i += 1;
+    }
+    sha512.hash_from_data()
 }
 
 /// Calculate a SHA-512 hash extension.
@@ -407,22 +430,17 @@ pub fn compute_hash(input: &[u8]) -> [u8; 64] {
 ///     &sha512::compute_hash(combined_data.as_slice())[..]);
 /// ```
 #[must_use]
-pub fn extend_hash(hash: [u8; 64], length: usize, additional_input: &[u8]) -> [u8; 64] {
+pub const fn extend_hash(hash: [u8; 64], length: usize, additional_input: &[u8]) -> [u8; 64] {
     let len = length + padding_length_for_input_length(length) + additional_input.len();
-
-    let data: Vec<u8> = additional_input
-        .iter()
-        .copied()
-        .chain(padding_for_length(len))
-        .collect();
-
-    assert_eq!(data.len() % 128, 0);
-
-    data.chunks_exact(128)
-        .fold(SHA512::from(hash), |sha512, chunk| {
-            sha512.apply_chunk(chunk)
-        })
-        .hash_from_data()
+    let num_chunks = (additional_input.len() + padding_length_for_input_length(len)) / 128;
+    let mut sha512 = SHA512::from(hash);
+    let mut i = 0;
+    while i < num_chunks {
+        let chunk = SHA512::get_chunk(additional_input, len, i);
+        sha512 = sha512.apply_chunk(chunk);
+        i += 1;
+    }
+    sha512.hash_from_data()
 }
 
 #[cfg(test)]
