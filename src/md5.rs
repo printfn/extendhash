@@ -1,5 +1,4 @@
 use alloc::vec::Vec;
-use core::iter;
 
 #[derive(Copy, Clone)]
 struct MD5 {
@@ -80,19 +79,18 @@ impl MD5 {
         0xeb86_d391,
     ];
 
-    fn padding_for_length(input_length: usize) -> impl Iterator<Item = u8> {
-        let len_as_bytes = (input_length as u64).wrapping_mul(8).to_le_bytes();
-
-        iter::once(0b1000_0000)
-            .chain(iter::repeat(0).take(Self::padding_length_for_input_length(input_length) - 9))
-            .chain(iter::once(len_as_bytes[0]))
-            .chain(iter::once(len_as_bytes[1]))
-            .chain(iter::once(len_as_bytes[2]))
-            .chain(iter::once(len_as_bytes[3]))
-            .chain(iter::once(len_as_bytes[4]))
-            .chain(iter::once(len_as_bytes[5]))
-            .chain(iter::once(len_as_bytes[6]))
-            .chain(iter::once(len_as_bytes[7]))
+    const fn padding_value_at_idx(input_length: usize, idx: usize) -> u8 {
+        let padding_length = Self::padding_length_for_input_length(input_length);
+        // assert idx < padding_length
+        if idx == 0 {
+            0b1000_0000
+        } else if idx <= padding_length - 9 {
+            0
+        } else {
+            let offset = idx + 8 - padding_length;
+            let bytes = (input_length as u64).wrapping_mul(8).to_le_bytes();
+            bytes[offset]
+        }
     }
 
     // chunk must have a length of 64
@@ -210,7 +208,11 @@ impl MD5 {
 /// ```
 #[must_use]
 pub fn padding_for_length(input_length: usize) -> Vec<u8> {
-    MD5::padding_for_length(input_length).collect()
+    let mut result = alloc::vec![];
+    for i in 0..padding_length_for_input_length(input_length) {
+        result.push(MD5::padding_value_at_idx(input_length, i));
+    }
+    result
 }
 
 /// Compute the MD5 padding length (in bytes) for the given
@@ -269,7 +271,7 @@ pub fn compute_hash(input: &[u8]) -> [u8; 16] {
     let data: Vec<u8> = input
         .iter()
         .copied()
-        .chain(MD5::padding_for_length(input.len()))
+        .chain(padding_for_length(input.len()))
         .collect();
 
     assert_eq!(data.len() % 64, 0);
@@ -329,7 +331,7 @@ pub fn extend_hash(hash: [u8; 16], length: usize, additional_input: &[u8]) -> [u
     let data: Vec<u8> = additional_input
         .iter()
         .copied()
-        .chain(MD5::padding_for_length(len))
+        .chain(padding_for_length(len))
         .collect();
 
     assert_eq!(data.len() % 64, 0);
