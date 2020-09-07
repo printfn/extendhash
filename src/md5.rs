@@ -93,6 +93,24 @@ impl MD5 {
         }
     }
 
+    const fn get_num_chunks(data_length: usize) -> usize {
+        (data_length + Self::padding_length_for_input_length(data_length)) / 64
+    }
+
+    const fn get_chunk(data: &[u8], chunk_idx: usize) -> [u8; 64] {
+        let mut chunk = [0; 64];
+        let mut i = 0;
+        while i < 64 {
+            if chunk_idx * 64 + i < data.len() {
+                chunk[i] = data[chunk_idx * 64 + i];
+            } else {
+                chunk[i] = Self::padding_value_at_idx(data.len(), chunk_idx * 64 + i - data.len());
+            }
+            i += 1;
+        }
+        chunk
+    }
+
     // chunk must have a length of 64
     const fn apply_chunk(self, chunk: &[u8]) -> Self {
         let mut h = self.h;
@@ -267,18 +285,17 @@ pub const fn padding_length_for_input_length(input_length: usize) -> usize {
 ///     0x33, 0x2c, 0xa3, 0x4b, 0xda, 0x6c, 0xba, 0x9d]);
 /// ```
 #[must_use]
-pub fn compute_hash(input: &[u8]) -> [u8; 16] {
-    let data: Vec<u8> = input
-        .iter()
-        .copied()
-        .chain(padding_for_length(input.len()))
-        .collect();
-
-    assert_eq!(data.len() % 64, 0);
-
-    data.chunks_exact(64)
-        .fold(MD5::new(), |md5, chunk| md5.apply_chunk(chunk))
-        .hash_from_data()
+pub const fn compute_hash(input: &[u8]) -> [u8; 16] {
+    let num_chunks = MD5::get_num_chunks(input.len());
+    let mut md5 = MD5::new();
+    let mut i = 0;
+    while i < num_chunks {
+        let chunk = MD5::get_chunk(input, i);
+        let slice: &[u8] = &chunk;
+        md5 = md5.apply_chunk(slice);
+        i += 1;
+    }
+    md5.hash_from_data()
 }
 
 /// Calculate an MD5 hash extension.
