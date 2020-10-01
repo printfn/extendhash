@@ -39,11 +39,11 @@ impl SHA1 {
         let mut h = self.h;
 
         {
-            let mut i = 0;
-            while i < 80 {
-                let current_w = w[i];
+            let mut idx = 0;
+            while idx < 80 {
+                let current_w = w[idx];
 
-                let (f, k) = match i {
+                let (f, k) = match idx {
                     0..=19 => ((h[1] & h[2]) | ((!h[1]) & h[3]), 0x5a82_7999),
                     20..=39 => (h[1] ^ h[2] ^ h[3], 0x6ed9_eba1),
                     40..=59 => ((h[1] & h[2]) | (h[1] & h[3]) | (h[2] & h[3]), 0x8f1b_bcdc),
@@ -63,7 +63,7 @@ impl SHA1 {
                 h[1] = h[0];
                 h[0] = temp;
 
-                i += 1;
+                idx += 1;
             }
         }
 
