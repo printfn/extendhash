@@ -119,8 +119,10 @@ impl SHA512 {
                         chunk[8 * i + 7],
                     ]);
                 } else {
-                    let s0 = w[i - 15].rotate_right(1) ^ w[i - 15].rotate_right(8) ^ (w[i - 15] >> 7);
-                    let s1 = w[i - 2].rotate_right(19) ^ w[i - 2].rotate_right(61) ^ (w[i - 2] >> 6);
+                    let s0 =
+                        w[i - 15].rotate_right(1) ^ w[i - 15].rotate_right(8) ^ (w[i - 15] >> 7);
+                    let s1 =
+                        w[i - 2].rotate_right(19) ^ w[i - 2].rotate_right(61) ^ (w[i - 2] >> 6);
                     w[i] = w[i - 16]
                         .wrapping_add(s0)
                         .wrapping_add(w[i - 7])
