@@ -1,11 +1,11 @@
 use alloc::vec::Vec;
 
 #[derive(Copy, Clone)]
-struct SHA256 {
+struct Sha256 {
     h: [u32; 8],
 }
 
-impl SHA256 {
+impl Sha256 {
     const K: [u32; 64] = [
         0x428a_2f98,
         0x7137_4491,
@@ -273,7 +273,7 @@ pub fn padding_for_length(input_length: usize) -> Vec<u8> {
     let padding_length = padding_length_for_input_length(input_length);
     let mut result = Vec::with_capacity(padding_length);
     for i in 0..padding_length {
-        result.push(SHA256::padding_value_at_idx(input_length, i));
+        result.push(Sha256::padding_value_at_idx(input_length, i));
     }
     result
 }
@@ -305,7 +305,7 @@ pub fn padding_for_length(input_length: usize) -> Vec<u8> {
 /// ```
 #[must_use]
 pub const fn padding_length_for_input_length(input_length: usize) -> usize {
-    SHA256::padding_length_for_input_length(input_length)
+    Sha256::padding_length_for_input_length(input_length)
 }
 
 /// Compute the SHA-256 hash of the input data
@@ -333,11 +333,11 @@ pub const fn padding_length_for_input_length(input_length: usize) -> usize {
 /// ```
 #[must_use]
 pub const fn compute_hash(input: &[u8]) -> [u8; 32] {
-    let num_chunks = SHA256::get_num_chunks(input.len());
-    let mut sha256 = SHA256::new();
+    let num_chunks = Sha256::get_num_chunks(input.len());
+    let mut sha256 = Sha256::new();
     let mut i = 0;
     while i < num_chunks {
-        let chunk = SHA256::get_chunk(input, input.len(), i);
+        let chunk = Sha256::get_chunk(input, input.len(), i);
         sha256 = sha256.apply_chunk(chunk);
         i += 1;
     }
@@ -391,10 +391,10 @@ pub const fn compute_hash(input: &[u8]) -> [u8; 32] {
 pub const fn extend_hash(hash: [u8; 32], length: usize, additional_input: &[u8]) -> [u8; 32] {
     let len = length + padding_length_for_input_length(length) + additional_input.len();
     let num_chunks = (additional_input.len() + padding_length_for_input_length(len)) / 64;
-    let mut sha256 = SHA256::from(hash);
+    let mut sha256 = Sha256::from(hash);
     let mut i = 0;
     while i < num_chunks {
-        let chunk = SHA256::get_chunk(additional_input, len, i);
+        let chunk = Sha256::get_chunk(additional_input, len, i);
         sha256 = sha256.apply_chunk(chunk);
         i += 1;
     }

@@ -90,7 +90,7 @@ pub const fn padding_length_for_input_length(input_length: usize) -> usize {
 /// ```
 #[must_use]
 pub const fn compute_hash(input: &[u8]) -> [u8; 20] {
-    sha01::compute_hash(input, sha01::HashType::SHA0)
+    sha01::compute_hash(input, sha01::HashType::Sha0)
 }
 
 /// Calculate a SHA-1 hash extension.
@@ -138,7 +138,7 @@ pub const fn compute_hash(input: &[u8]) -> [u8; 20] {
 /// ```
 #[must_use]
 pub const fn extend_hash(hash: [u8; 20], length: usize, additional_input: &[u8]) -> [u8; 20] {
-    sha01::extend_hash(hash, length, additional_input, sha01::HashType::SHA0)
+    sha01::extend_hash(hash, length, additional_input, sha01::HashType::Sha0)
 }
 
 #[cfg(test)]

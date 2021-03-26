@@ -1,11 +1,11 @@
 use alloc::vec::Vec;
 
 #[derive(Copy, Clone)]
-struct SHA512 {
+struct Sha512 {
     h: [u64; 8],
 }
 
-impl SHA512 {
+impl Sha512 {
     const K: [u64; 80] = [
         0x428a_2f98_d728_ae22,
         0x7137_4491_23ef_65cd,
@@ -313,7 +313,7 @@ pub fn padding_for_length(input_length: usize) -> Vec<u8> {
     let padding_length = padding_length_for_input_length(input_length);
     let mut result = Vec::with_capacity(padding_length);
     for i in 0..padding_length {
-        result.push(SHA512::padding_value_at_idx(input_length, i));
+        result.push(Sha512::padding_value_at_idx(input_length, i));
     }
     result
 }
@@ -345,7 +345,7 @@ pub fn padding_for_length(input_length: usize) -> Vec<u8> {
 /// ```
 #[must_use]
 pub const fn padding_length_for_input_length(input_length: usize) -> usize {
-    SHA512::padding_length_for_input_length(input_length)
+    Sha512::padding_length_for_input_length(input_length)
 }
 
 /// Compute the SHA-512 hash of the input data
@@ -377,11 +377,11 @@ pub const fn padding_length_for_input_length(input_length: usize) -> usize {
 /// ```
 #[must_use]
 pub const fn compute_hash(input: &[u8]) -> [u8; 64] {
-    let num_chunks = SHA512::get_num_chunks(input.len());
-    let mut sha512 = SHA512::new();
+    let num_chunks = Sha512::get_num_chunks(input.len());
+    let mut sha512 = Sha512::new();
     let mut i = 0;
     while i < num_chunks {
-        let chunk = SHA512::get_chunk(input, input.len(), i);
+        let chunk = Sha512::get_chunk(input, input.len(), i);
         sha512 = sha512.apply_chunk(chunk);
         i += 1;
     }
@@ -435,10 +435,10 @@ pub const fn compute_hash(input: &[u8]) -> [u8; 64] {
 pub const fn extend_hash(hash: [u8; 64], length: usize, additional_input: &[u8]) -> [u8; 64] {
     let len = length + padding_length_for_input_length(length) + additional_input.len();
     let num_chunks = (additional_input.len() + padding_length_for_input_length(len)) / 128;
-    let mut sha512 = SHA512::from(hash);
+    let mut sha512 = Sha512::from(hash);
     let mut i = 0;
     while i < num_chunks {
-        let chunk = SHA512::get_chunk(additional_input, len, i);
+        let chunk = Sha512::get_chunk(additional_input, len, i);
         sha512 = sha512.apply_chunk(chunk);
         i += 1;
     }

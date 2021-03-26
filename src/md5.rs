@@ -1,11 +1,11 @@
 use alloc::vec::Vec;
 
 #[derive(Copy, Clone)]
-struct MD5 {
+struct Md5 {
     h: [u32; 4],
 }
 
-impl MD5 {
+impl Md5 {
     const S: [u32; 64] = [
         7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22, 5, 9, 14, 20, 5, 9, 14, 20, 5,
         9, 14, 20, 5, 9, 14, 20, 4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23, 6, 10,
@@ -235,7 +235,7 @@ pub fn padding_for_length(input_length: usize) -> Vec<u8> {
     let padding_length = padding_length_for_input_length(input_length);
     let mut result = Vec::with_capacity(padding_length);
     for i in 0..padding_length {
-        result.push(MD5::padding_value_at_idx(input_length, i));
+        result.push(Md5::padding_value_at_idx(input_length, i));
     }
     result
 }
@@ -267,7 +267,7 @@ pub fn padding_for_length(input_length: usize) -> Vec<u8> {
 /// ```
 #[must_use]
 pub const fn padding_length_for_input_length(input_length: usize) -> usize {
-    MD5::padding_length_for_input_length(input_length)
+    Md5::padding_length_for_input_length(input_length)
 }
 
 /// Compute the MD5 hash of the input data
@@ -293,11 +293,11 @@ pub const fn padding_length_for_input_length(input_length: usize) -> usize {
 /// ```
 #[must_use]
 pub const fn compute_hash(input: &[u8]) -> [u8; 16] {
-    let num_chunks = MD5::get_num_chunks(input.len());
-    let mut md5 = MD5::new();
+    let num_chunks = Md5::get_num_chunks(input.len());
+    let mut md5 = Md5::new();
     let mut i = 0;
     while i < num_chunks {
-        let chunk = MD5::get_chunk(input, input.len(), i);
+        let chunk = Md5::get_chunk(input, input.len(), i);
         md5 = md5.apply_chunk(chunk);
         i += 1;
     }
@@ -351,10 +351,10 @@ pub const fn compute_hash(input: &[u8]) -> [u8; 16] {
 pub const fn extend_hash(hash: [u8; 16], length: usize, additional_input: &[u8]) -> [u8; 16] {
     let len = length + padding_length_for_input_length(length) + additional_input.len();
     let num_chunks = (additional_input.len() + padding_length_for_input_length(len)) / 64;
-    let mut md5 = MD5::from(hash);
+    let mut md5 = Md5::from(hash);
     let mut i = 0;
     while i < num_chunks {
-        let chunk = MD5::get_chunk(additional_input, len, i);
+        let chunk = Md5::get_chunk(additional_input, len, i);
         md5 = md5.apply_chunk(chunk);
         i += 1;
     }
@@ -472,6 +472,6 @@ mod tests {
                 return;
             }
         }
-        assert!(false, "No matching hash found");
+        unreachable!("No matching hash found");
     }
 }
