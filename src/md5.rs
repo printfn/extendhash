@@ -240,6 +240,19 @@ pub fn padding_for_length(input_length: usize) -> Vec<u8> {
     result
 }
 
+#[must_use]
+#[allow(dead_code)]
+const fn const_padding_for_length<const INPUT_LENGTH: usize, const PADDING_LENGTH: usize>(
+) -> [u8; PADDING_LENGTH] {
+    let mut result = [0; PADDING_LENGTH];
+    let mut i = 0;
+    while i < PADDING_LENGTH {
+        result[i] = Md5::padding_value_at_idx(INPUT_LENGTH, i);
+        i += 1;
+    }
+    result
+}
+
 /// Compute the MD5 padding length (in bytes) for the given
 /// input length.
 ///
@@ -473,5 +486,14 @@ mod tests {
             }
         }
         unreachable!("No matching hash found");
+    }
+
+    #[test]
+    fn test_const_padding() {
+        const INPUT_LENGTH: usize = 5;
+        const PADDING_LENGTH: usize = md5::padding_length_for_input_length(INPUT_LENGTH);
+        const PADDING: [u8; PADDING_LENGTH] =
+            md5::const_padding_for_length::<INPUT_LENGTH, PADDING_LENGTH>();
+        assert_eq!(PADDING[0], 0x80);
     }
 }
