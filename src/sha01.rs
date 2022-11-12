@@ -122,8 +122,7 @@ impl Sha1 {
                 if index_into_padding < padding_len {
                     chunk[i] = Self::padding_value_at_idx(data_len, index_into_padding);
                 } else {
-                    // error
-                    let _ = chunk[i + 100000];
+                    panic!("unreachable: internal error");
                 }
             }
             i += 1;
