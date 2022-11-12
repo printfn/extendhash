@@ -440,7 +440,7 @@ mod tests {
     #[test]
     fn long_test() {
         assert_eq!(
-            md5::compute_hash(&*alloc::vec![b'a'; 1_000_000].into_boxed_slice()),
+            md5::compute_hash(&alloc::vec![b'a'; 1_000_000].into_boxed_slice()),
             [
                 0x77, 0x07, 0xd6, 0xae, 0x4e, 0x02, 0x7c, 0x70, 0xee, 0xa2, 0xa9, 0x35, 0xc2, 0x29,
                 0x6f, 0x21

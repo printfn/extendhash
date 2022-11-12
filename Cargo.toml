@@ -2,7 +2,7 @@
 name = "extendhash"
 version = "1.0.9" # remember to update in lib.rs
 authors = ["printfn <printfn@users.noreply.github.com>"]
-edition = "2018"
+edition = "2021"
 description = "Rust Hash Extender"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/printfn/extendhash"

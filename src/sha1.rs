@@ -209,7 +209,7 @@ mod tests {
     #[test]
     fn long_test() {
         assert_eq!(
-            sha1::compute_hash(&*alloc::vec![b'a'; 1_000_000].into_boxed_slice()),
+            sha1::compute_hash(&alloc::vec![b'a'; 1_000_000].into_boxed_slice()),
             [
                 0x34, 0xaa, 0x97, 0x3c, 0xd4, 0xc4, 0xda, 0xa4, 0xf6, 0x1e, 0xeb, 0x2b, 0xdb, 0xad,
                 0x27, 0x31, 0x65, 0x34, 0x01, 0x6f
